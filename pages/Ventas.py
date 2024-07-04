@@ -11,9 +11,31 @@ st.set_page_config(page_title="Ventas", page_icon="📶")
 st.title("Datos de la Faena y la Mortalidad de la camada")
 st.sidebar.header("Faena")
 
+## Establecemos conexion con la base de datos
+
+conn = st.connection('postgresql', type='sql')
+df = conn.query('SELECT * FROM tipo_presas')
+
+st.write(df['nombre'])
+
+tipos = df['nombre'].unique()
+
+st.write(tipos)
+
+
 st.write(
     """En este módulo se ingresarán los datos de las ventas de los pollos de engorde 🐓""")
 
+c1, c2, c3 = st.columns(3)
+
+with c1:
+    st.selectbox('Seleccione el tipo de presa',tipos)
+
+with c2:
+    st.text_input('Ingrese la cantidad: ')
+    
+with c3:
+    st.text_input('Ingrese el valor unitario: ')
 
 # Configurar la conexión a la base de datos
 def init_connection():
