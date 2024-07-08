@@ -2,6 +2,11 @@ import streamlit as st
 #import psycopg2
 import pandas as pd
 
+# Se agrega logo
+HORIZONTAL = 'src\images\horizontal_logo.png'
+
+st.logo(HORIZONTAL)
+
 conn = st.connection('postgresql', type='sql')
 
 df = conn.query('SELECT * FROM public.objetivos_desempeno')

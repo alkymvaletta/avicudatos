@@ -6,6 +6,11 @@ from PIL import Image
 import os
 import secrets
 
+# Se agrega logo
+HORIZONTAL = 'src\images\horizontal_logo.png'
+
+st.logo(HORIZONTAL)
+
 # Configuration of the page
 st.set_page_config(page_title="Faena", page_icon="🍗")
 st.title("Datos de la Faena ")
