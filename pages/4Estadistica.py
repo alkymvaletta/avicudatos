@@ -7,12 +7,20 @@ HORIZONTAL = 'src\images\horizontal_logo.png'
 
 st.logo(HORIZONTAL)
 
+st.set_page_config(page_title='Avicudatos - Estadisticas de desempeño',page_icon=':abacus:')
+
+st.title('Estadistica de desmpeño')
+
+# Conectamos con la database
 conn = st.connection('postgresql', type='sql')
 
 df = conn.query('SELECT * FROM public.objetivos_desempeno')
 
 
+st.write('Vigila el desempeño de tus aves de acuerdo a los datos de referencia suministrados por cada una de las razas')
+
 st.write(df)
+
 # Configurar la conexión a la base de datos
 # def init_connection():
 #     return psycopg2.connect(

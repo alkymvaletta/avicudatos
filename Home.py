@@ -3,12 +3,12 @@ import streamlit_authenticator as stauth
 from hash.hash_fun import encriptar_pass
 from hash.hash_fun import verificar_pass
 
+# Se agrega logo
 HORIZONTAL = 'src\images\horizontal_logo.png'
-#HORIZONTAL = 'src\images\avicudatos.png'
 
 st.logo(HORIZONTAL)
 
-st.set_page_config(page_title='Inicio', page_icon='🐔', layout='centered')
+st.set_page_config(page_title='Avicudatos - Inicio', page_icon='🐔', layout='centered')
 
 st.header('Avicudatos 🐔', divider='rainbow')
 st.subheader('Analizamos el rendimiento de tus aves')

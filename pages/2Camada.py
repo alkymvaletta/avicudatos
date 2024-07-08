@@ -12,7 +12,7 @@ HORIZONTAL = 'src\images\horizontal_logo.png'
 st.logo(HORIZONTAL)
 
 # Configuration of the page
-st.set_page_config(page_title="1. Camadas", page_icon="🐣")
+st.set_page_config(page_title="Avicudatos - Camadas", page_icon="🐣")
 st.title("Mis camadas")
 st.sidebar.header("Mis Camadas")
 cant_camadas_activas = 2
