@@ -3,7 +3,8 @@ import streamlit_authenticator as stauth
 from hash.hash_fun import encriptar_pass
 from hash.hash_fun import verificar_pass
 
-HORIZONTAL = 'src\images\horizontal_logo.jpeg'
+HORIZONTAL = 'src\images\horizontal_logo.png'
+#HORIZONTAL = 'src\images\avicudatos.png'
 
 st.logo(HORIZONTAL)
 
