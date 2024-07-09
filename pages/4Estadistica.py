@@ -14,86 +14,46 @@ st.title('Estadistica de desmpeño')
 # Conectamos con la database
 conn = st.connection('postgresql', type='sql')
 
-df = conn.query('SELECT * FROM public.objetivos_desempeno')
+df = conn.query('''SELECT EDAD_EN_DIAS,
+                        PESO,
+                        consumo_alimentos_acumulado,
+                        RAZAS.NOMBRE AS "Raza",
+                        SEXOS_AVES.SEXO
+                    FROM PUBLIC.OBJETIVOS_DESEMPENO
+                    LEFT JOIN PUBLIC.RAZAS ON RAZAS.ID = OBJETIVOS_DESEMPENO.RAZA_ID
+                    LEFT JOIN PUBLIC.SEXOS_AVES ON SEXOS_AVES.ID = OBJETIVOS_DESEMPENO.ID_SEXO''')
 
 
 st.write('Vigila el desempeño de tus aves de acuerdo a los datos de referencia suministrados por cada una de las razas')
 
-st.write(df)
+# Creamos 3 columnas para establecer filtros
 
-# Configurar la conexión a la base de datos
-# def init_connection():
-#     return psycopg2.connect(
-#         host="TU_HOST",
-#         database="TU_DATABASE",
-#         user="TU_USUARIO",
-#         password="TU_CONTRASEÑA"
-#     )
+col1, col2, col3 = st.columns(3)
 
-# # Ejecutar una consulta en la base de datos
-# def run_query(query, params=None):
-#     conn = init_connection()
-#     with conn.cursor() as cur:
-#         cur.execute(query, params)
-#         return cur.fetchall()
+## Creamos filtro para seleccionar rango de días
+with col1:
+    dias = st.slider('Cuantos días deseas visualizar', 
+              min_value=df['edad_en_dias'].min(), 
+              max_value=df['edad_en_dias'].max())
 
-# # Obtener datos de la tabla 'usuario'
-# def get_user_data():
-#     query = "SELECT nombre, apellido, email FROM usuario LIMIT 1"
-#     result = run_query(query)
-#     if result:
-#         return result[0]
-#     return None
+## Creamos filtro para seleccionar Raza
+with col2:
+    raza = st.selectbox('Seleccione las raza', df['Raza'].unique())
 
-# # Obtener datos de la tabla 'camada'
-# def get_camada_data():
-#     query = "SELECT COUNT(*) FROM camada WHERE activa = TRUE"
-#     result = run_query(query)
-#     if result:
-#         return result[0][0]
-#     return 0
+## Creamos filtro para seleccionar Sexo
+with col3:
+    sexo = st.selectbox('Seleccione el sexo', df['sexo'].unique())
 
-# # Obtener datos combinados de todas las tablas relevantes
-# def get_combined_data():
-#     query = """
-#     SELECT
-#         u.nombre,
-#         u.apellido,
-#         u.email,
-#         g.nombre_granja,
-#         l.municipio,
-#         d.nombre AS departamento,
-#         COUNT(c.id) AS camadas_activas
-#     FROM usuario u
-#     LEFT JOIN granja g ON g.usuario_id = u.id
-#     LEFT JOIN ubicacion l ON g.ubicacion_id = l.cod_municipio
-#     LEFT JOIN ubicacion_departamento d ON l.departamento_id = d.cod_departamento
-#     LEFT JOIN camada c ON c.granja_id = g.id AND c.activa = TRUE
-#     GROUP BY u.nombre, u.apellido, u.email, g.nombre_granja, l.municipio, d.nombre
-#     """
-#     result = run_query(query)
-#     columns = ["Nombre", "Apellido", "Email", "Nombre Granja", "Municipio", "Departamento", "Camadas Activas"]
-#     return pd.DataFrame(result, columns=columns)
+df_filtrado = df[
+            ((df['edad_en_dias']).isin(range(0, dias + 1))) &
+            (df['Raza'] == raza) &
+            (df['sexo'] == sexo)
+            ]
 
-# # Interfaz de usuario
-# def main():
-#     st.title("Estadísticas de Avicuidatos")
+st.line_chart(df_filtrado, x= 'edad_en_dias', y='consumo_alimentos_acumulado')
 
-#     # Obtener datos del usuario
-#     user_data = get_user_data()
-#     if user_data:
-#         nombre, apellido, email = user_data
-#         st.write(f"Hola {nombre} {apellido}, tienes {get_camada_data()} camadas activas.")
-#     else:
-#         st.write("No se encontraron datos del usuario.")
+#st.line_chart(df_filtrado, x= 'edad_en_dias', y= ['consumo_alimentos_acumulado', 'peso' ])
 
-#     # Obtener y mostrar datos combinados en una tabla
-#     combined_data = get_combined_data()
-#     if not combined_data.empty:
-#         st.write("Aquí tienes un resumen de tus datos:")
-#         st.dataframe(combined_data)
-#     else:
-#         st.write("No se encontraron datos para mostrar.")
 
-# if __name__ == "__main__":
-#     main()
+if st.checkbox('Visualizar datos'):
+    st.write(df_filtrado)
