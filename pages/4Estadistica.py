@@ -32,9 +32,10 @@ col1, col2, col3 = st.columns(3)
 
 ## Creamos filtro para seleccionar rango de días
 with col1:
-    dias = st.slider('Cuantos días deseas visualizar', 
-              min_value=df['edad_en_dias'].min(), 
-              max_value=df['edad_en_dias'].max())
+    dias = st.slider('Cuantos días deseas visualizar',
+                value=42,
+                min_value=df['edad_en_dias'].min(), 
+                max_value=df['edad_en_dias'].max())
 
 ## Creamos filtro para seleccionar Raza
 with col2:
@@ -44,15 +45,28 @@ with col2:
 with col3:
     sexo = st.selectbox('Seleccione el sexo', df['sexo'].unique())
 
+# Se crea df de acuerdo a los filtros seleccionados
 df_filtrado = df[
             ((df['edad_en_dias']).isin(range(0, dias + 1))) &
             (df['Raza'] == raza) &
             (df['sexo'] == sexo)
             ]
 
-st.line_chart(df_filtrado, x= 'edad_en_dias', y='consumo_alimentos_acumulado')
+# Graficamos el consumo de alimentos acumulado
+st.subheader('Consumo de alimento acumulado')
+st.line_chart(df_filtrado, 
+              x= 'edad_en_dias', 
+              y='consumo_alimentos_acumulado', 
+              x_label='Dias', 
+              y_label='Consumo alimento acumulado [g]')
 
-#st.line_chart(df_filtrado, x= 'edad_en_dias', y= ['consumo_alimentos_acumulado', 'peso' ])
+# Graficamos el peso
+st.subheader('Ganancia de peso acumulada')
+st.line_chart(df_filtrado, 
+              x= 'edad_en_dias', 
+              y='peso',
+              x_label='Dias',
+              y_label='Peso [g]')
 
 
 if st.checkbox('Visualizar datos'):
