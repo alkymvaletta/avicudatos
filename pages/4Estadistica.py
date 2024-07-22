@@ -9,7 +9,7 @@ st.logo(HORIZONTAL)
 
 st.set_page_config(page_title='Avicudatos - Estadisticas de desempeño',page_icon=':abacus:')
 
-st.title('Estadistica de desmpeño')
+st.title('Estadistica de desempeño')
 
 # Conectamos con la database
 conn = st.connection('postgresql', type='sql')
