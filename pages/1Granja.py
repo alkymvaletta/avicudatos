@@ -1,6 +1,4 @@
 import streamlit as st
-import sqlalchemy
-import psycopg2
 from psycopg2 import sql
 from PIL import Image
 import os
@@ -34,7 +32,7 @@ if st.checkbox('**Gestionar**'):
     # Se abre la opción para agregar granjas 
     if st.checkbox('**Agregar granjas**'):
         st.write('Se muestran las granjas')
-        #with st.form('test'):
+        
         
     # Se abre la opción para agregar galpones
     if st.checkbox('**Agregar galpones**'):

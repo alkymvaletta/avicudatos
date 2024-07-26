@@ -1,0 +1,38 @@
+{
+    "340f0950ba21a25b1552190d2f38c671": {
+        "page_script_hash": "340f0950ba21a25b1552190d2f38c671",
+        "page_name": "login2",
+        "icon": "",
+        "script_path": "C:\\Users\\alkin\\OneDrive\\Documentos\\Master UNIR\\Tesis\\avicudatos\\login2.py"
+    },
+    "16d12b03746d04a6edf801830b6716d9": {
+        "page_script_hash": "16d12b03746d04a6edf801830b6716d9",
+        "page_name": "Granja",
+        "icon": "",
+        "script_path": "C:\\Users\\alkin\\OneDrive\\Documentos\\Master UNIR\\Tesis\\avicudatos\\pages\\1Granja.py"
+    },
+    "919513edc8b694ea09e587d9d954cce4": {
+        "page_script_hash": "919513edc8b694ea09e587d9d954cce4",
+        "page_name": "Camada",
+        "icon": "",
+        "script_path": "C:\\Users\\alkin\\OneDrive\\Documentos\\Master UNIR\\Tesis\\avicudatos\\pages\\2Camada.py"
+    },
+    "f5b97212a14cb41690f866bb28593bf3": {
+        "page_script_hash": "f5b97212a14cb41690f866bb28593bf3",
+        "page_name": "Faenas",
+        "icon": "",
+        "script_path": "C:\\Users\\alkin\\OneDrive\\Documentos\\Master UNIR\\Tesis\\avicudatos\\pages\\3Faenas.py"
+    },
+    "dad451d06937a4445de8ee3eff2b9f88": {
+        "page_script_hash": "dad451d06937a4445de8ee3eff2b9f88",
+        "page_name": "Estadistica",
+        "icon": "",
+        "script_path": "C:\\Users\\alkin\\OneDrive\\Documentos\\Master UNIR\\Tesis\\avicudatos\\pages\\4Estadistica.py"
+    },
+    "6a9175952fe55ff07fb49a5288dc5a68": {
+        "page_script_hash": "6a9175952fe55ff07fb49a5288dc5a68",
+        "page_name": "Ventas",
+        "icon": "",
+        "script_path": "C:\\Users\\alkin\\OneDrive\\Documentos\\Master UNIR\\Tesis\\avicudatos\\pages\\5Ventas.py"
+    }
+}

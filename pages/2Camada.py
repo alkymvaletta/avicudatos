@@ -32,7 +32,7 @@ st.subheader('Tus camadas activas')
 
 st.write('Aqui va el DF con la lista de camadas activas')
 
-st.subheader('Gestiona las necesidades de la camada')
+st.subheader('Registra la operación de la camada')
 
 
 ### Se agregan la gestión de consumibles 
