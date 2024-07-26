@@ -1,5 +1,5 @@
 from pathlib import Path
-#import json
+import json
 import streamlit as st
 import bcrypt
 import sqlalchemy as sa
@@ -78,7 +78,6 @@ def authenticate_user_in_db(username, password):
 def get_all_pages():
     default_pages = get_pages(DEFAULT_PAGE)
     pages_path = Path("pages.json")
-
     if pages_path.exists():
         saved_default_pages = json.loads(pages_path.read_text())
     else:
@@ -135,7 +134,7 @@ if not st.session_state.logged_in:
     # Autenticación de usuarios existentes
     st.subheader("Inicio de Sesión")
     login_username = st.text_input("Nombre de Usuario", key="login_username")
-    login_password = st.text_input("Contraseña", type="password", key="login_password")
+    login_password = bytes(st.text_input("Contraseña", type="password", key="login_password"), 'utf-8')
     if st.button("Iniciar Sesión"):
         if authenticate_user_in_db(login_username, login_password):
             st.session_state.logged_in = True
@@ -153,13 +152,17 @@ if not st.session_state.logged_in:
     new_email = st.text_input("Email", key="new_email")
     new_username = st.text_input("Nombre de Usuario", key="new_username")
     new_password = st.text_input("Contraseña", type="password", key="new_password")
-    if st.button("Registrar"):
-        if new_nombre and new_apellido and new_email and new_username and new_password:
-            if add_user_to_db(new_nombre, new_apellido, new_email, new_username, new_password):
-            #if add_user_to_db(new_nombre, new_apellido, new_email, new_username, new_password):
-                st.success("Usuario registrado exitosamente!")
-        else:
-            st.error("Por favor, complete todos los campos.")
+    new_password_confi = st.text_input("Confirme Contraseña", type="password")
+    
+    if new_password != new_password_confi:
+        st.warning('Contraseñas no coindicen', icon=':material/warning:')
+    else:
+        if st.button("Registrar"):
+            if new_nombre and new_apellido and new_email and new_username and new_password:
+                if add_user_to_db(new_nombre, new_apellido, new_email, new_username, new_password):
+                    st.success("Usuario registrado exitosamente!")
+            else:
+                st.error("Por favor, complete todos los campos.")
 else:
     st.success(f"Bienvenido {st.session_state.authenticated_username}!")
     st.markdown("¡Aquí comienza tu nuevo reto Bienvenid@ a avicuidatos!")
