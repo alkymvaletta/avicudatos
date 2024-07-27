@@ -4,7 +4,6 @@ import streamlit as st
 import bcrypt
 import sqlalchemy as sa
 import psycopg2
-#from sqlalchemy import create_engine
 from psycopg2 import sql, errors
 from streamlit.source_util import _on_pages_changed, get_pages
 from datetime import date
@@ -12,7 +11,7 @@ from datetime import date
 st.set_page_config(page_title='Avicudatos - Inicio', page_icon='🐔', layout='centered')
 
 
-DEFAULT_PAGE = "Login2.py"
+DEFAULT_PAGE = "Home.py"
 
 
 def add_user_to_db(nombre, apellido, email, username, password):
@@ -25,7 +24,6 @@ def add_user_to_db(nombre, apellido, email, username, password):
         password=db_config['password']
     )
     try:
-        #conn = psycopg2.connect(**DATABASE_CONFIG)
         c = conn.cursor()
         hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
         fecha_union = date.today()
@@ -47,6 +45,7 @@ def add_user_to_db(nombre, apellido, email, username, password):
         return False
 
 
+
 def authenticate_user_in_db(username, password):
     db_config = st.secrets['database']
     conn = psycopg2.connect(
@@ -60,7 +59,7 @@ def authenticate_user_in_db(username, password):
         c = conn.cursor()
         c.execute('SELECT password FROM usuario WHERE username = %s', (username,))
         result = c.fetchone()
-        if result and bcrypt.checkpw(password.encode(), bytes(result[0])):
+        if result and bcrypt.checkpw(password.encode('utf-8'), bytes(result[0])):
             c.execute('UPDATE usuario SET ultimo_login = %s WHERE username = %s', (date.today(), username))
             conn.commit()
             conn.close()
@@ -72,8 +71,6 @@ def authenticate_user_in_db(username, password):
         st.error(f"Error al autenticar usuario: {e}")
         return False
 
-# Crear la base de datos y la tabla si no existen
-#create_db()
 
 def get_all_pages():
     default_pages = get_pages(DEFAULT_PAGE)
@@ -126,7 +123,7 @@ if 'authenticated_username' not in st.session_state:
 
 clear_all_but_first_page()
 
-st.title("Página de Inicio de Sesión")
+#st.title("Página de Inicio de Sesión")
 
 if not st.session_state.logged_in:
     
@@ -134,7 +131,7 @@ if not st.session_state.logged_in:
     # Autenticación de usuarios existentes
     st.subheader("Inicio de Sesión")
     login_username = st.text_input("Nombre de Usuario", key="login_username")
-    login_password = bytes(st.text_input("Contraseña", type="password", key="login_password"), 'utf-8')
+    login_password = st.text_input("Contraseña", type="password", key="login_password")
     if st.button("Iniciar Sesión"):
         if authenticate_user_in_db(login_username, login_password):
             st.session_state.logged_in = True
@@ -144,6 +141,9 @@ if not st.session_state.logged_in:
         else:
             st.error("Nombre de usuario o contraseña incorrectos.")
             clear_all_but_first_page()
+    st.subheader("Aún no eres usuario")
+    if st.button('Registrarse'):
+        st.write('Crea el usuario')
     
     # Registro de nuevos usuarios
     st.subheader("Registro")
@@ -154,6 +154,7 @@ if not st.session_state.logged_in:
     new_password = st.text_input("Contraseña", type="password", key="new_password")
     new_password_confi = st.text_input("Confirme Contraseña", type="password")
     
+    #Verificación de contraseña
     if new_password != new_password_confi:
         st.warning('Contraseñas no coindicen', icon=':material/warning:')
     else:
@@ -167,6 +168,7 @@ else:
     st.success(f"Bienvenido {st.session_state.authenticated_username}!")
     st.markdown("¡Aquí comienza tu nuevo reto Bienvenid@ a avicuidatos!")
     st.subheader("Contenido exclusivo para usuarios autenticados")
+    
 
     # Ejemplo de sección oculta
     st.write("Esta sección es visible solo para usuarios autenticados.")
@@ -177,3 +179,4 @@ else:
         st.session_state.authenticated_username = None
         st.success("Has cerrado sesión exitosamente.")
         clear_all_but_first_page()
+        st.rerun()
