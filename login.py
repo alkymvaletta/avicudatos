@@ -8,13 +8,13 @@ from psycopg2 import sql, errors
 from streamlit.source_util import _on_pages_changed, get_pages
 from datetime import date
 
-st.set_page_config(page_title='Avicudatos - Inicio', page_icon='🐔', layout='centered')
+# st.set_page_config(page_title='Avicudatos - Inicio', page_icon='🐔', layout='centered')
 
 
-DEFAULT_PAGE = "Home.py"
+# DEFAULT_PAGE = "Home.py"
 
 
-def add_user_to_db(nombre, apellido, email, username, password):
+def agregarUsuario(nombre, apellido, email, username, password):
     db_config = st.secrets['database']
     conn = psycopg2.connect(
         host = db_config['host'],
@@ -46,7 +46,7 @@ def add_user_to_db(nombre, apellido, email, username, password):
 
 
 
-def authenticate_user_in_db(username, password):
+def validarUsuario(username, password):
     db_config = st.secrets['database']
     conn = psycopg2.connect(
         host = db_config['host'],
@@ -72,16 +72,7 @@ def authenticate_user_in_db(username, password):
         return False
 
 
-def get_all_pages():
-    default_pages = get_pages(DEFAULT_PAGE)
-    pages_path = Path("pages.json")
-    if pages_path.exists():
-        saved_default_pages = json.loads(pages_path.read_text())
-    else:
-        saved_default_pages = default_pages.copy()
-        pages_path.write_text(json.dumps(default_pages, indent=4))
 
-    return saved_default_pages
 
 def clear_all_but_first_page():
     current_pages = get_pages(DEFAULT_PAGE)
@@ -108,75 +99,75 @@ def show_all_pages():
     _on_pages_changed.send()
     
 
-HORIZONTAL = 'src\images\horizontal_logo.png'
+# HORIZONTAL = 'src\images\horizontal_logo.png'
 
-st.logo(HORIZONTAL)
+# st.logo(HORIZONTAL)
 
-st.header('Avicudatos 🐔', divider='rainbow')
-st.subheader('Analizamos el rendimiento de tus aves')
+# st.header('Avicudatos 🐔', divider='rainbow')
+# st.subheader('Analizamos el rendimiento de tus aves')
 
 # Gestión del estado de la sesión
-if 'logged_in' not in st.session_state:
-    st.session_state.logged_in = False
-if 'authenticated_username' not in st.session_state:
-    st.session_state.authenticated_username = None
+# if 'logged_in' not in st.session_state:
+#     st.session_state.logged_in = False
+# if 'authenticated_username' not in st.session_state:
+#     st.session_state.authenticated_username = None
 
-clear_all_but_first_page()
+# clear_all_but_first_page()
 
-#st.title("Página de Inicio de Sesión")
+# #st.title("Página de Inicio de Sesión")
 
-if not st.session_state.logged_in:
+# if not st.session_state.logged_in:
     
 
-    # Autenticación de usuarios existentes
-    st.subheader("Inicio de Sesión")
-    login_username = st.text_input("Nombre de Usuario", key="login_username")
-    login_password = st.text_input("Contraseña", type="password", key="login_password")
-    if st.button("Iniciar Sesión"):
-        if authenticate_user_in_db(login_username, login_password):
-            st.session_state.logged_in = True
-            st.session_state.authenticated_username = login_username
-            show_all_pages()
-            st.success(f"Inicio de sesión exitoso! Bienvenido {login_username}")
-        else:
-            st.error("Nombre de usuario o contraseña incorrectos.")
-            clear_all_but_first_page()
-    st.subheader("Aún no eres usuario")
-    if st.button('Registrarse'):
-        st.write('Crea el usuario')
+#     # Autenticación de usuarios existentes
+#     st.subheader("Inicio de Sesión")
+#     login_username = st.text_input("Nombre de Usuario", key="login_username")
+#     login_password = st.text_input("Contraseña", type="password", key="login_password")
+#     if st.button("Iniciar Sesión"):
+#         if authenticate_user_in_db(login_username, login_password):
+#             st.session_state.logged_in = True
+#             st.session_state.authenticated_username = login_username
+#             show_all_pages()
+#             st.success(f"Inicio de sesión exitoso! Bienvenido {login_username}")
+#         else:
+#             st.error("Nombre de usuario o contraseña incorrectos.")
+#             clear_all_but_first_page()
+#     st.subheader("Aún no eres usuario")
+#     if st.button('Registrarse'):
+#         st.write('Crea el usuario')
     
-    # Registro de nuevos usuarios
-    st.subheader("Registro")
-    new_nombre = st.text_input("Nombre", key="new_nombre")
-    new_apellido = st.text_input("Apellido", key="new_apellido")
-    new_email = st.text_input("Email", key="new_email")
-    new_username = st.text_input("Nombre de Usuario", key="new_username")
-    new_password = st.text_input("Contraseña", type="password", key="new_password")
-    new_password_confi = st.text_input("Confirme Contraseña", type="password")
+#     # Registro de nuevos usuarios
+#     st.subheader("Registro")
+#     new_nombre = st.text_input("Nombre", key="new_nombre")
+#     new_apellido = st.text_input("Apellido", key="new_apellido")
+#     new_email = st.text_input("Email", key="new_email")
+#     new_username = st.text_input("Nombre de Usuario", key="new_username")
+#     new_password = st.text_input("Contraseña", type="password", key="new_password")
+#     new_password_confi = st.text_input("Confirme Contraseña", type="password")
     
-    #Verificación de contraseña
-    if new_password != new_password_confi:
-        st.warning('Contraseñas no coindicen', icon=':material/warning:')
-    else:
-        if st.button("Registrar"):
-            if new_nombre and new_apellido and new_email and new_username and new_password:
-                if add_user_to_db(new_nombre, new_apellido, new_email, new_username, new_password):
-                    st.success("Usuario registrado exitosamente!")
-            else:
-                st.error("Por favor, complete todos los campos.")
-else:
-    st.success(f"Bienvenido {st.session_state.authenticated_username}!")
-    st.markdown("¡Aquí comienza tu nuevo reto Bienvenid@ a avicuidatos!")
-    st.subheader("Contenido exclusivo para usuarios autenticados")
+#     #Verificación de contraseña
+#     if new_password != new_password_confi:
+#         st.warning('Contraseñas no coindicen', icon=':material/warning:')
+#     else:
+#         if st.button("Registrar"):
+#             if new_nombre and new_apellido and new_email and new_username and new_password:
+#                 if add_user_to_db(new_nombre, new_apellido, new_email, new_username, new_password):
+#                     st.success("Usuario registrado exitosamente!")
+#             else:
+#                 st.error("Por favor, complete todos los campos.")
+# else:
+#     st.success(f"Bienvenido {st.session_state.authenticated_username}!")
+#     st.markdown("¡Aquí comienza tu nuevo reto Bienvenid@ a avicuidatos!")
+#     st.subheader("Contenido exclusivo para usuarios autenticados")
     
 
-    # Ejemplo de sección oculta
-    st.write("Esta sección es visible solo para usuarios autenticados.")
+#     # Ejemplo de sección oculta
+#     st.write("Esta sección es visible solo para usuarios autenticados.")
 
-    # Opción para cerrar sesión
-    if st.button("Cerrar Sesión"):
-        st.session_state.logged_in = False
-        st.session_state.authenticated_username = None
-        st.success("Has cerrado sesión exitosamente.")
-        clear_all_but_first_page()
-        st.rerun()
+#     # Opción para cerrar sesión
+#     if st.button("Cerrar Sesión"):
+#         st.session_state.logged_in = False
+#         st.session_state.authenticated_username = None
+#         st.success("Has cerrado sesión exitosamente.")
+#         clear_all_but_first_page()
+#         st.rerun()
