@@ -1,5 +1,6 @@
 import streamlit as st
 import psycopg2
+import re
 
 def generarMenu(usuario = None):
     with st.sidebar:
@@ -26,6 +27,12 @@ def generarMenu(usuario = None):
                 st.page_link('Home.py')
                 st.rerun()
 
+
+def validador_email(email):
+    if re.search(r'[\w.]+\@[\w.]+', email):
+        return st.write('Correo electrónico OK')
+    else:
+        return st.warning('Correo electrónico no es válido', icon=':material/gpp_maybe:')
 
 # def conectarDB():
 #     db_config = st.secrets['database']

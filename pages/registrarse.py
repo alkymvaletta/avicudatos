@@ -28,12 +28,21 @@ else:
         new_password = st.text_input("Contraseña", type="password", key="new_password")
         new_password_confi = st.text_input("Confirme Contraseña", type="password")
         btnRegistar = st.form_submit_button('Registrar', type='primary')
+        
+        ### Pruebas de condiciones
+        
+        ## Nombre
+        if new_email != None:
+            util.validador_email(new_email)
+        
+            
+        
         if btnRegistar:
             if new_password != new_password_confi:
                 st.error("Las contraseñas no coinciden.", icon=':material/gpp_maybe:')
             if login.agregarUsuario(new_nombre, new_apellido, new_email, new_username, new_password):
-                st.session_state['usuario'] = ingUser
+                #st.session_state['usuario'] = ingUser
                 #st.page_link('Home.py')
                 st.rerun()
             else:
-                st.error("Usuario o contraseña incorrectos.", icon=':material/gpp_maybe:')
+                st.error("**El usuario NO se pudo registrar**", icon=':material/gpp_maybe:')
