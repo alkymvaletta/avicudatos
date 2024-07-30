@@ -1,8 +1,5 @@
 import streamlit as st
 import utilidades as util
-import login
-
-#util.generarMenu()
 
 HORIZONTAL = 'src\images\horizontal_logo.png'
 
@@ -22,9 +19,8 @@ else:
         ingPassword = st.text_input('Contraseña:', type='password')
         btnLogin = st.form_submit_button('Ingresar', type='primary')
         if btnLogin:
-            if login.validarUsuario(ingUser,ingPassword):
+            if util.validarUsuario(ingUser,ingPassword):
                 st.session_state['usuario'] = ingUser
-                #st.page_link('Home.py')
                 st.rerun()
             else:
                 st.error("Usuario o contraseña incorrectos.", icon=':material/gpp_maybe:')
