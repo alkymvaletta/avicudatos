@@ -163,4 +163,4 @@ cython_debug/
 /hash
 
 # Archivo secrets
-secrets.toml
+.streamlit/secrets.toml
