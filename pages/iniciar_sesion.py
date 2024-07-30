@@ -21,6 +21,7 @@ else:
         if btnLogin:
             if util.validarUsuario(ingUser,ingPassword):
                 st.session_state['usuario'] = ingUser
+                st.success('**Ha iniciado sesion satisfactoriamente**')
                 st.rerun()
             else:
                 st.error("Usuario o contraseña incorrectos.", icon=':material/gpp_maybe:')

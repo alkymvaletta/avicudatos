@@ -41,6 +41,9 @@ else:
 
             if len(new_password) < 8:
                 errores.append('La clave debe tener al menos 8 caracteres.')
+            
+            if len(new_username) == 0:
+                errores.append('El **nombre de usuario** no puede estar vacío.')
 
             if util.validador_email(new_email) == False:
                 errores.append('El email ingresado no es válido.')
@@ -49,10 +52,12 @@ else:
                 for error in errores:
                     st.error(error, icon=':material/gpp_maybe:')
             else:
-                if util.agregarUsuario(new_nombre, new_apellido, new_email, new_username, new_password):
+                
+                resultado =  util.agregarUsuario(new_nombre, new_apellido, new_email, new_username, new_password)
+                if resultado['success']:
                     st.success('**El usuario se ha registrado satisfactoriamente**')
                 else:
-                    st.error('**El usuario NO se pudo registrar**', icon=':material/warning:')
+                    st.error(f'**El usuario NO se pudo registrar: {resultado["error"]}**', icon=':material/warning:')
 
 #test = st.text_input('Email de prueba')
 #st.write(util.validador_email(test))

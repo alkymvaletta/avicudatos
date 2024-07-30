@@ -48,6 +48,19 @@ def agregarUsuario(nombre, apellido, email, username, password):
     )
     try:
         c = conn.cursor()
+        
+        # Verificar si el email ya está registrado
+        c.execute("SELECT 1 FROM usuario WHERE email = %s", (email,))
+        if c.fetchone():
+            conn.close()
+            return {"success": False, "error": "El email ya está registrado."}
+        
+        # Verificar si el username ya está registrado
+        c.execute("SELECT 1 FROM usuario WHERE username = %s", (username,))
+        if c.fetchone():
+            conn.close()
+            return {"success": False, "error": "El username ya está registrado."}
+        
         hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
         fecha_union = date.today()
         c.execute('''
@@ -56,16 +69,16 @@ def agregarUsuario(nombre, apellido, email, username, password):
         ''', (nombre, apellido, email, username, hashed_password, fecha_union))
         conn.commit()
         conn.close()
-        return True
+        return {"success": True}
+    
     except errors.UniqueViolation:
         conn.rollback()
         conn.close()
-        st.error("El email ingresado ya ya se encuentra registrado", icon=':material/gpp_maybe:')
-        return False
+        return {"success": False, 'error': "El email o username ya está registrado."}
+    
     except Exception as e:
         conn.close()
-        st.error(f"Error al agregar usuario a la base de datos: {e}")
-        return False
+        return {"success": False, 'error': f"Error al agregar usuario a la base de datos: {e}"}
 
 
 
