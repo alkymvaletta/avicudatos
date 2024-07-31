@@ -1,16 +1,17 @@
 import streamlit as st
+import utilidades as util
 from psycopg2 import sql
-from PIL import Image
-import os
-import secrets
+
 
 # Se agrega logo
 HORIZONTAL = 'src\images\horizontal_logo.png'
 
 st.logo(HORIZONTAL)
 
+util.generarMenu(st.session_state['usuario'])
+
 #Configuración de Pagina
-st.set_page_config(page_title="Avicudatos - Granja", page_icon="🏠", layout='centered')
+#st.set_page_config(page_title="Avicudatos - Granja", page_icon="🏠", layout='centered')
 st.title("Granja y galpones")
 st.sidebar.header("Mi Granja")
 

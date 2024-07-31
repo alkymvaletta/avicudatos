@@ -1,15 +1,16 @@
 import streamlit as st
 import sqlalchemy
 import psycopg2
+import utilidades as util
 from psycopg2 import sql
 from PIL import Image
-import os
-import secrets
 
 # Se agrega logo
 HORIZONTAL = 'src\images\horizontal_logo.png'
 
 st.logo(HORIZONTAL)
+
+util.generarMenu(st.session_state['usuario'])
 
 # Configuration of the page
 st.set_page_config(page_title="Avicudatos - Ventas", page_icon="📶")

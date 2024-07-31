@@ -5,15 +5,17 @@ import re
 from psycopg2 import errors
 from datetime import date
 
+## Genera los menú en el sidebar
 def generarMenu(usuario = None):
     with st.sidebar:
-        if usuario == None:
+        if usuario == None: # Si el usuario NO ha iniciado sesión
             st.write(f'**Bienvenido avicultor**')
             st.page_link('Home.py', label= 'Inicio', icon= ':material/home:')
             st.subheader('Iniciar sesión o Registrarse')
             st.page_link('pages/iniciar_sesion.py', label= 'Inicia sesión', icon= ':material/login:')
             st.page_link('pages/registrarse.py', label= 'Crea una cuenta', icon=':material/person_add:')
-        else:
+            
+        else: # Si el usuario ya inició sesión
             st.write(f'Bienvenido, **{usuario}**')
             st.page_link('Home.py', label= 'Inicio', icon= ':material/home:')
             st.subheader('Gestiona tu granja')
@@ -25,18 +27,20 @@ def generarMenu(usuario = None):
             st.subheader('Evalúa tu desempeño')
             st.page_link('pages/estadistica.py', label='Analíticas', icon=':material/analytics:')
             btnSalir=st.button("Cerrar Sesión")
-            if btnSalir:
+            
+            if btnSalir: # Boton para cerrar sesión
                 st.session_state.clear() # Se borra el session_state
                 st.page_link('Home.py')
                 st.rerun()
 
-
+## Valida que el correo ingresado si tenga forma de correo electrónico
 def validador_email(email):
     if re.search(r'[\w.]+\@[\w.]+\.+[\w.]', email):
         return True
     else:
         return False
 
+## Agrega usuarios nuevos a la base de datos
 def agregarUsuario(nombre, apellido, email, username, password):
     db_config = st.secrets['database']
     conn = psycopg2.connect(
@@ -81,7 +85,7 @@ def agregarUsuario(nombre, apellido, email, username, password):
         return {"success": False, 'error': f"Error al agregar usuario a la base de datos: {e}"}
 
 
-
+## Incia sesión de los usuarios registrados
 def validarUsuario(username, password):
     db_config = st.secrets['database']
     conn = psycopg2.connect(

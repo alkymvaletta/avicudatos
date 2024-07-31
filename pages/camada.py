@@ -1,18 +1,20 @@
 import streamlit as st
 import sqlalchemy
 import psycopg2
+import utilidades as util
 from psycopg2 import sql
 from PIL import Image
-import os
-import secrets
+
 
 # Se agrega logo
 HORIZONTAL = 'src\images\horizontal_logo.png'
 
 st.logo(HORIZONTAL)
 
+util.generarMenu(st.session_state['usuario'])
+
 # Configuración de la página
-st.set_page_config(page_title="Avicudatos - Camadas", page_icon="🐣")
+#st.set_page_config(page_title="Avicudatos - Camadas", page_icon="🐣")
 st.title("Camadas")
 
 # Configuración de la conexión con la base de datos

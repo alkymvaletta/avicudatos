@@ -1,5 +1,6 @@
 import streamlit as st
-#import psycopg2
+import psycopg2
+import utilidades as util
 import pandas as pd
 
 # Se agrega logo
@@ -7,7 +8,9 @@ HORIZONTAL = 'src\images\horizontal_logo.png'
 
 st.logo(HORIZONTAL)
 
-st.set_page_config(page_title='Avicudatos - Estadisticas de desempeño',page_icon=':abacus:')
+util.generarMenu(st.session_state['usuario'])
+
+#st.set_page_config(page_title='Avicudatos - Estadisticas de desempeño',page_icon=':abacus:')
 
 st.title('Estadistica de desempeño')
 
