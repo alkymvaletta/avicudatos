@@ -14,8 +14,9 @@ def generarMenu(usuario = None):
             st.subheader('Iniciar sesión o Registrarse')
             st.page_link('pages/iniciar_sesion.py', label= 'Inicia sesión', icon= ':material/login:')
             st.page_link('pages/registrarse.py', label= 'Crea una cuenta', icon=':material/person_add:')
-            
-        else: # Si el usuario ya inició sesión
+         
+        # Si el usuario ya inició sesión   
+        else: 
             st.write(f'Bienvenido, **{usuario}**')
             st.page_link('Home.py', label= 'Inicio', icon= ':material/home:')
             st.subheader('Gestiona tu granja')
@@ -28,9 +29,11 @@ def generarMenu(usuario = None):
             st.page_link('pages/estadistica.py', label='Analíticas', icon=':material/analytics:')
             btnSalir=st.button("Cerrar Sesión")
             
-            if btnSalir: # Boton para cerrar sesión
+            # Boton para cerrar sesión
+            if btnSalir: 
                 st.session_state.clear() # Se borra el session_state
-                st.page_link('Home.py')
+                st.switch_page('Home.py')
+                #st.page_link('Home.py')
                 st.rerun()
 
 ## Valida que el correo ingresado si tenga forma de correo electrónico
@@ -111,13 +114,16 @@ def validarUsuario(username, password):
         st.error(f"Error al autenticar usuario: {e}")
         return False
 
-# def conectarDB():
-#     db_config = st.secrets['database']
-#     conn = psycopg2.connect(
-#         host = db_config['host'],
-#         port=db_config['port'],
-#         database=db_config['database'],
-#         user=db_config['username'],
-#         password=db_config['password']
-#     )
-    
+def conectarDB():
+    db_config = st.secrets['database']
+    conn = psycopg2.connect(
+        host = db_config['host'],
+        port=db_config['port'],
+        database=db_config['database'],
+        user=db_config['username'],
+        password=db_config['password']
+    )
+
+def verificar_activos(id_usuario, conn, tabla):
+    c = conn.cursor()
+    c.execute('SELECT ')
