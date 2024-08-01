@@ -116,17 +116,22 @@ def validarUsuario(username, password):
         c.close()
         conn.close()
 
+# Conexión a la base de datos
 def conectarDB():
     db_config = st.secrets['database']
-    conn = psycopg2.connect(
-        host = db_config['host'],
-        port=db_config['port'],
-        database=db_config['database'],
-        user=db_config['username'],
-        password=db_config['password']
-    )
-    c = conn.cursor()
-    return c
+    try:
+        conn = psycopg2.connect(
+            host = db_config['host'],
+            port=db_config['port'],
+            database=db_config['database'],
+            user=db_config['username'],
+            password=db_config['password']
+        )
+        c = conn.cursor()
+        return c
+    except Exception as e:
+        st.error(f'Error al conectar con la base de datos: {e}')
+        return None
 
 def verificar_activos(id_usuario, conn, tabla):
     c = conn.cursor()

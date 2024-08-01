@@ -17,9 +17,10 @@ st.title('Estadistica de desempeño')
 
 # Conectamos con la database
 
-c = util.conectarDB()
+c  = util.conectarDB()
 
-df = c.execute('''SELECT EDAD_EN_DIAS,
+# Extraemos los datos de DB con base al query
+c.execute('''SELECT EDAD_EN_DIAS,
                         PESO,
                         consumo_alimentos_acumulado,
                         RAZAS.NOMBRE AS "Raza",
@@ -28,14 +29,11 @@ df = c.execute('''SELECT EDAD_EN_DIAS,
                     LEFT JOIN PUBLIC.RAZAS ON RAZAS.ID = OBJETIVOS_DESEMPENO.RAZA_ID
                     LEFT JOIN PUBLIC.SEXOS_AVES ON SEXOS_AVES.ID = OBJETIVOS_DESEMPENO.ID_SEXO''')
 
-# df = conn.query('''SELECT EDAD_EN_DIAS,
-#                         PESO,
-#                         consumo_alimentos_acumulado,
-#                         RAZAS.NOMBRE AS "Raza",
-#                         SEXOS_AVES.SEXO
-#                     FROM PUBLIC.OBJETIVOS_DESEMPENO
-#                     LEFT JOIN PUBLIC.RAZAS ON RAZAS.ID = OBJETIVOS_DESEMPENO.RAZA_ID
-#                     LEFT JOIN PUBLIC.SEXOS_AVES ON SEXOS_AVES.ID = OBJETIVOS_DESEMPENO.ID_SEXO''')
+resultados = c.fetchall()
+
+columnas = [desc[0] for desc in c.description]
+
+df = pd.DataFrame(resultados, columns=columnas)
 
 
 st.write('Vigila el desempeño de tus aves de acuerdo a los datos de referencia suministrados por cada una de las razas')
