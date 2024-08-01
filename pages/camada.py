@@ -9,12 +9,14 @@ from PIL import Image
 # Se agrega logo
 HORIZONTAL = 'src\images\horizontal_logo.png'
 
+st.set_page_config(page_title="Avicudatos - Camadas", page_icon='🐔')
+
 st.logo(HORIZONTAL)
 
 util.generarMenu(st.session_state['usuario'])
 
 # Configuración de la página
-#st.set_page_config(page_title="Avicudatos - Camadas", page_icon="🐣")
+
 st.title("Camadas")
 
 # Configuración de la conexión con la base de datos

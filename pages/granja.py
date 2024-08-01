@@ -6,6 +6,8 @@ from psycopg2 import sql
 # Se agrega logo
 HORIZONTAL = 'src\images\horizontal_logo.png'
 
+st.set_page_config(page_title= 'Avicudatos - Granjas y galpones', page_icon='🐔')
+
 st.logo(HORIZONTAL)
 
 util.generarMenu(st.session_state['usuario'])
@@ -25,6 +27,9 @@ st.header('Tus granjas')
 st.write('Agrega o elimina granjas y galpones de acuerdo a tus necesidades')
 
 st.write('Aqui van las granjas activas ')
+
+
+    
 
 ## Se hace check box para gestionar las granjas
 

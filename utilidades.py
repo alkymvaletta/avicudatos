@@ -14,10 +14,10 @@ def generarMenu(usuario = None):
             st.subheader('Iniciar sesión o Registrarse')
             st.page_link('pages/iniciar_sesion.py', label= 'Inicia sesión', icon= ':material/login:')
             st.page_link('pages/registrarse.py', label= 'Crea una cuenta', icon=':material/person_add:')
-         
+        
         # Si el usuario ya inició sesión   
         else: 
-            st.write(f'Bienvenido, **{usuario}**')
+            st.write(f'Bienvenido, **:red[{usuario}]**')
             st.page_link('Home.py', label= 'Inicio', icon= ':material/home:')
             st.subheader('Gestiona tu granja')
             st.page_link('pages/granja.py', label='Tu granja', icon=':material/agriculture:')
@@ -33,7 +33,6 @@ def generarMenu(usuario = None):
             if btnSalir: 
                 st.session_state.clear() # Se borra el session_state
                 st.switch_page('Home.py')
-                #st.page_link('Home.py')
                 st.rerun()
 
 ## Valida que el correo ingresado si tenga forma de correo electrónico
@@ -100,19 +99,22 @@ def validarUsuario(username, password):
     )
     try:
         c = conn.cursor()
-        c.execute('SELECT password FROM usuario WHERE username = %s', (username,))
+        c.execute('SELECT password, id FROM usuario WHERE username = %s', (username,))
         result = c.fetchone()
+        st.write(result)
+        
         if result and bcrypt.checkpw(password.encode('utf-8'), bytes(result[0])):
+            user_id = result[1]
             c.execute('UPDATE usuario SET ultimo_login = %s WHERE username = %s', (date.today(), username))
             conn.commit()
-            conn.close()
-            return True
-        conn.close()
-        return False
+            return {'success':True, 'id': user_id}
+        return {'success':False, 'id': None}
     except Exception as e:
-        conn.close()
         st.error(f"Error al autenticar usuario: {e}")
-        return False
+        return {'success':False, 'id': None}
+    finally:
+        c.close()
+        conn.close()
 
 def conectarDB():
     db_config = st.secrets['database']
@@ -123,6 +125,8 @@ def conectarDB():
         user=db_config['username'],
         password=db_config['password']
     )
+    c = conn.cursor()
+    return c
 
 def verificar_activos(id_usuario, conn, tabla):
     c = conn.cursor()

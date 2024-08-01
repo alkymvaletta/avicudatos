@@ -6,18 +6,20 @@ import pandas as pd
 # Se agrega logo
 HORIZONTAL = 'src\images\horizontal_logo.png'
 
+st.set_page_config(page_title='Avicudatos - Estadisticas de desempeño',page_icon='🐔')
+
 st.logo(HORIZONTAL)
 
 util.generarMenu(st.session_state['usuario'])
 
-#st.set_page_config(page_title='Avicudatos - Estadisticas de desempeño',page_icon=':abacus:')
 
 st.title('Estadistica de desempeño')
 
 # Conectamos con la database
-conn = st.connection('postgresql', type='sql')
 
-df = conn.query('''SELECT EDAD_EN_DIAS,
+c = util.conectarDB()
+
+df = c.execute('''SELECT EDAD_EN_DIAS,
                         PESO,
                         consumo_alimentos_acumulado,
                         RAZAS.NOMBRE AS "Raza",
@@ -25,6 +27,15 @@ df = conn.query('''SELECT EDAD_EN_DIAS,
                     FROM PUBLIC.OBJETIVOS_DESEMPENO
                     LEFT JOIN PUBLIC.RAZAS ON RAZAS.ID = OBJETIVOS_DESEMPENO.RAZA_ID
                     LEFT JOIN PUBLIC.SEXOS_AVES ON SEXOS_AVES.ID = OBJETIVOS_DESEMPENO.ID_SEXO''')
+
+# df = conn.query('''SELECT EDAD_EN_DIAS,
+#                         PESO,
+#                         consumo_alimentos_acumulado,
+#                         RAZAS.NOMBRE AS "Raza",
+#                         SEXOS_AVES.SEXO
+#                     FROM PUBLIC.OBJETIVOS_DESEMPENO
+#                     LEFT JOIN PUBLIC.RAZAS ON RAZAS.ID = OBJETIVOS_DESEMPENO.RAZA_ID
+#                     LEFT JOIN PUBLIC.SEXOS_AVES ON SEXOS_AVES.ID = OBJETIVOS_DESEMPENO.ID_SEXO''')
 
 
 st.write('Vigila el desempeño de tus aves de acuerdo a los datos de referencia suministrados por cada una de las razas')

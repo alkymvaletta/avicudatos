@@ -3,15 +3,16 @@ import psycopg2
 from psycopg2 import sql
 import utilidades as util
 
+st.set_page_config(page_title="Avicudatos - Faena", page_icon='🐔')
+
 # Se agrega logo
 HORIZONTAL = 'src\images\horizontal_logo.png'
 
 st.logo(HORIZONTAL)
 
-
 util.generarMenu(st.session_state['usuario'])
 # Configuration of the page
-#st.set_page_config(page_title="Avicudatos - Faena", page_icon="🍗", layout='centered')
+
 st.title("Faena tus camadas ")
 
 

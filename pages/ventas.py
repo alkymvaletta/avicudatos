@@ -8,12 +8,14 @@ from PIL import Image
 # Se agrega logo
 HORIZONTAL = 'src\images\horizontal_logo.png'
 
+st.set_page_config(page_title="Avicudatos - Ventas", page_icon='🐔')
+
 st.logo(HORIZONTAL)
 
 util.generarMenu(st.session_state['usuario'])
 
 # Configuration of the page
-st.set_page_config(page_title="Avicudatos - Ventas", page_icon="📶")
+
 st.title("Ventas de tus camadas")
 
 ## Establecemos conexion con la base de datos

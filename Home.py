@@ -5,7 +5,7 @@ from hash.hash_fun import encriptar_pass
 from hash.hash_fun import verificar_pass
 
 
-    
+st.set_page_config(page_title='Avicudatos - Inicio', page_icon='🐔')   
 
 # Se agrega logo
 HORIZONTAL = 'src\images\horizontal_logo.png'
@@ -14,7 +14,7 @@ st.logo(HORIZONTAL)
 
 st.header('Avicudatos 🐔', divider='rainbow')
 
-#st.set_page_config(page_title='Avicudatos - Inicio', page_icon='🐔', layout='centered')
+
 if 'usuario' in st.session_state:
     
     usuario = st.session_state['usuario']
@@ -23,6 +23,7 @@ if 'usuario' in st.session_state:
     
     st.subheader(f'Analizando el rendimiento de las aves de :red[{usuario}]')
 
+    #Genera este texto si el usuario inició sesión
     st.markdown('''
             Bienvenido a :red[AVICUDATOS], la plataforma innovadora diseñada para transformar la avicultura de pollos de engorde. 
             Aquí, evaluamos meticulosamente el desempeño de sus granjas, proporcionando una visión detallada de cada galpón y camada. 
@@ -32,6 +33,8 @@ if 'usuario' in st.session_state:
             relevante para maximizar su éxito. 
             \n¡Descubra cómo AVICUDATOS puede elevar su producción avícola al próximo nivel!
             ''')
+    
+    # Se genera este texto y menús si el usuario no ha iniciado sesión
 else:
     util.generarMenu()
     

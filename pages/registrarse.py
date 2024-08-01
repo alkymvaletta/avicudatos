@@ -5,7 +5,7 @@ HORIZONTAL = 'src\images\horizontal_logo.png'
 
 st.logo(HORIZONTAL)
 
-#st.set_page_config(page_title= 'Avicudatos - Inicio de Sesión', initial_sidebar_state= 'expanded')
+st.set_page_config(page_title= 'Avicudatos -Crear cuenta', page_icon='🐔')
 
 st.header('Avicudatos 🐔', divider='rainbow')
 
@@ -58,6 +58,3 @@ else:
                     st.success('**El usuario se ha registrado satisfactoriamente**')
                 else:
                     st.error(f'**El usuario NO se pudo registrar: {resultado["error"]}**', icon=':material/warning:')
-
-#test = st.text_input('Email de prueba')
-#st.write(util.validador_email(test))
