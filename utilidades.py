@@ -99,9 +99,10 @@ def validarUsuario(username, password):
     )
     try:
         c = conn.cursor()
-        c.execute('SELECT password, id FROM usuario WHERE username = %s', (username,))
+        c.execute('''SELECT password, id 
+                    FROM usuario 
+                    WHERE username = %s''', (username,))
         result = c.fetchone()
-        st.write(result)
         
         if result and bcrypt.checkpw(password.encode('utf-8'), bytes(result[0])):
             user_id = result[1]
@@ -128,10 +129,10 @@ def conectarDB():
             password=db_config['password']
         )
         c = conn.cursor()
-        return c
+        return conn, c
     except Exception as e:
         st.error(f'Error al conectar con la base de datos: {e}')
-        return None
+        return None, None
 
 def verificar_activos(id_usuario, conn, tabla):
     c = conn.cursor()
