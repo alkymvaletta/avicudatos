@@ -87,8 +87,8 @@ with st.container():
                     municipio_granja = st.selectbox('Seleccione Municipio:', options=municipios_departamento['municipio'].sort_values())
                     cod_municipio_granja = int((df_municipios['cod_municipio'][df_municipios['municipio'] == municipio_granja]).values[0])
                     
-                    btnGranja = st.button('Crear granja', type='primary')
-                    if btnGranja:
+                    btnAddGranja = st.button('Crear granja', type='primary')
+                    if btnAddGranja:
                         errores = []
                         if len(nombre_granja) == 0:
                             errores.append('El nombre no puede estar vacío.')
@@ -109,17 +109,28 @@ with st.container():
                 else:
                     with st.container(border=True):
                         
-                        st.write(df_granjas_merged)
-                        
                         granja_galpon= st.selectbox('Seleccione la granja', df_granjas_show['Granja'])
                         nombre_galpon = st.text_input('Ingrese nombre del galpón')
-                        capacidad_galpon = st.number_input('Ingrese la capacidad del galpón', step=1, max_value=1000000)
+                        capacidad_galpon = st.number_input('Ingrese la capacidad del galpón', step=1,min_value=1, max_value=10_000)
                         
                         filtro_granja = df_granjas_merged['nombre_granja'] == granja_galpon
                         id_granja_galpon = int((df_granjas_merged[filtro_granja]['id']).values[0])
-                        #st.write(id_granja_galpon)
-                        #granja_galpon_id = filtro_granja['id'].values[0]
-                        #st.write(granja_galpon_id)
+                        
+                        btnAddGalpon = st.button('Crear galpón', type='primary')
+                        if btnAddGalpon:
+                            errores_galpon = []
+                            if len(nombre_galpon) == 0:
+                                errores_galpon.append('El nombre no puede estar vacío.')
+                            if capacidad_galpon <= 1:
+                                errores_galpon.append('La capacidad del galpón NO puede ser cero')
+                            if errores_galpon:
+                                for error in errores_galpon:
+                                    st.error(error, icon=':material/gpp_maybe:')
+                            else:
+                                resultado_galpon = util.agregarGalpon(id_granja_galpon, capacidad_galpon, nombre_galpon)
+                                if resultado_galpon == True:
+                                    st.success('Se creó el galpón exitosamente')
+
         
         if st.checkbox(':red[**Eliminar granja o galpón**]'):
         

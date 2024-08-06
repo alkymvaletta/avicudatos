@@ -152,7 +152,7 @@ def agregarGranja(usuario_id, nombre_granja, ubicacion):
                     ''', (usuario_id, nombre_granja, ubicacion, fecha, True))
             conn.commit()
             conn.close()
-            return {"success": True}
+            return True
         
         except Exception as e:
             st.error(f"Error al agregar la granja: {e}")
@@ -193,3 +193,25 @@ def consultaMunicipios():
             
         except Exception as e:
             st.write(f'Error al ejecutar la consulta: {e}')
+
+# Agrega galpones a la base de datos
+def agregarGalpon(granja_id, capacidad, nombre):
+    conn, c = conectarDB()
+    if conn is not None and c is not None:
+        try:
+            c.execute('''
+                        INSERT INTO galpon ( 
+                            granja_id, 
+                            capacidad, 
+                            nombre)
+                        VALUES(%s, %s, %s)
+                    ''', (granja_id, capacidad, nombre))
+            conn.commit()
+            conn.close()
+            return True
+        
+        except Exception as e:
+            st.error(f"Error al agregar el galpón: {e}")
+            return {'success':False}
+    else:
+        st.write('No se pudo conectar a la base de datos')
