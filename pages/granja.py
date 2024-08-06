@@ -59,67 +59,39 @@ else:
 with st.container():
     if st.checkbox('**Gestionar**'):
         
-        # Se abre la opción para agregar granjas 
-        if st.checkbox('**Agregar granjas**'):
+        #Conultamos lista de departamentos y municipios
+        df_departamentos, df_municipios = util.consultaMunicipios()
+        
+        # Formulario para agregar granja
+        with st.container(border=True):
+            nombre_granja = st.text_input('Ingresa el nombre de la granja:')
+            departamento_granja = st.selectbox('Seleccione Departamento:', options= df_departamentos['nombre'])
             
-            conn, c = util.conectarDB()
+            municipios_departamento = df_municipios[df_municipios['nombre'] == departamento_granja]
             
-            if conn is not None and c is not None:
-                try:
-                    # Consulto los departamentos
-                    c.execute(''' SELECT UPPER(NOMBRE) as nombre,
-                                    COD_DEPARTAMENTO
-                                FROM PUBLIC.UBICACION_DEPARTAMENTO
-                                ORDER BY NOMBRE ASC
-                            ''')
-                    departamentos = c.fetchall()
-                    columnas_departamentos = [desc[0] for desc in c.description]
-                    df_departamentos = pd.DataFrame(departamentos, columns=columnas_departamentos)
-                    
-                    c.execute('''SELECT DEPARTAMENTO,
-                                UPPER(NOMBRE) as nombre,
-                                MUNICIPIO,
-                                COD_MUNICIPIO
-                            FROM PUBLIC.UBICACION
-                            JOIN PUBLIC.UBICACION_DEPARTAMENTO ON UBICACION_DEPARTAMENTO.COD_DEPARTAMENTO = UBICACION.DEPARTAMENTO
-                            ''')
-                    municipios = c.fetchall()
-                    columnas_municipios = [desc[0] for desc in c.description]
-                    df_municipios = pd.DataFrame(municipios, columns= columnas_municipios)
-                    
-                    c.close()
-                    conn.close()
-                    # st.write(df_granjas)
-                except Exception as e:
-                    st.write(f'Error al ejecutar la consulta: {e}')
-                        
-            with st.form('frmGrnj'):
-                
-                nombre_granja = st.text_input('Ingresa el nombre de la granja:')
-                departamento_granja = st.selectbox('Seleccione Departamento:', options= df_departamentos['nombre'])
-                
-                municipios_departamento = df_municipios['municipio'][df_municipios['nombre'] == departamento_granja]
-                
-                municipio_granja = st.selectbox('Seleccione Municipio:', options=municipios_departamento)
-
-                btnGranja = st.form_submit_button('Crear granja')
-                
-                if btnGranja:
-                    errores = []
-                    if len(nombre_granja) == 0:
-                        errores.append('El nombre no puede estar vacío.')
-                    if errores:
-                        for error in errores:
-                            st.error(error, icon=':material/gpp_maybe:')
-                    else:
+            municipio_granja = st.selectbox('Seleccione Municipio:', options=municipios_departamento['municipio'].sort_values())
+            cod_municipio_granja = int((df_municipios['cod_municipio'][df_municipios['municipio'] == municipio_granja]).values[0])
+            
+            btnGranja = st.button('Crear granja', type='primary')
+            
+            if btnGranja:
+                errores = []
+                if len(nombre_granja) == 0:
+                    errores.append('El nombre no puede estar vacío.')
+                if errores:
+                    for error in errores:
+                        st.error(error, icon=':material/gpp_maybe:')
+                else:
+                    resultado = util.agregarGranja(user_id,nombre_granja,cod_municipio_granja)
+                    if resultado == True:
                         st.success('Se creó la granja con exito')
-            
-            
-            st.write(departamento_granja)
-            
-            st.write(df_departamentos)
-            
-            st.write(df_municipios)
+        
+        
+        st.write(municipios_departamento)
+        st.write(cod_municipio_granja)
+
         # Se abre la opción para agregar galpones
         if st.checkbox('**Agregar galpones**'):
             st.write('Se muestran los galpones ')
+            
+            

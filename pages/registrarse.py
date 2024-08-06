@@ -16,7 +16,7 @@ if 'usuario' in st.session_state:
 else:
     util.generarMenu()
     
-    with st.form('frmLogin'):
+    with st.form('frmLogin', clear_on_submit= True):
         st.subheader("Registro")
         new_nombre = (st.text_input("Nombre", key="new_nombre", max_chars=30)).lower()
         new_apellido = (st.text_input("Apellido", key="new_apellido", max_chars=30)).lower()

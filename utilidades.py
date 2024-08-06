@@ -1,6 +1,7 @@
 import streamlit as st
 import psycopg2
 import bcrypt
+import pandas as pd
 import re
 from psycopg2 import errors
 from datetime import date
@@ -134,6 +135,61 @@ def conectarDB():
         st.error(f'Error al conectar con la base de datos: {e}')
         return None, None
 
-def verificar_activos(id_usuario, conn, tabla):
-    c = conn.cursor()
-    c.execute('SELECT ')
+# Agregar granja a la base de datos
+def agregarGranja(usuario_id, nombre_granja, ubicacion):
+    conn, c = conectarDB()
+    if conn is not None and c is not None:
+        try:
+            fecha = date.today()
+            c.execute('''
+                        INSERT INTO granja ( 
+                            usuario_id, 
+                            nombre_granja, 
+                            ubicacion,
+                            fecha,
+                            es_activa)
+                        VALUES(%s, %s, %s, %s, %s)
+                    ''', (usuario_id, nombre_granja, ubicacion, fecha, True))
+            conn.commit()
+            conn.close()
+            return {"success": True}
+        
+        except Exception as e:
+            st.error(f"Error al agregar la granja: {e}")
+            return {'success':False}
+    else:
+        st.write('No se pudo conectar a la base de datos')
+
+# Consulta departamentos y municipios de colombia. Los devuelve en un dataframe
+def consultaMunicipios():
+    conn, c = conectarDB()
+    
+    if conn is not None and c is not None:
+        try:
+            # Consulto los departamentos
+            c.execute(''' SELECT UPPER(NOMBRE) as nombre,
+                            COD_DEPARTAMENTO
+                        FROM PUBLIC.UBICACION_DEPARTAMENTO
+                        ORDER BY NOMBRE ASC
+                    ''')
+            departamentos = c.fetchall()
+            columnas_departamentos = [desc[0] for desc in c.description]
+            df_departamentos = pd.DataFrame(departamentos, columns=columnas_departamentos)
+            
+            c.execute('''SELECT DEPARTAMENTO,
+                        UPPER(NOMBRE) as nombre,
+                        MUNICIPIO,
+                        COD_MUNICIPIO
+                    FROM PUBLIC.UBICACION
+                    JOIN PUBLIC.UBICACION_DEPARTAMENTO ON UBICACION_DEPARTAMENTO.COD_DEPARTAMENTO = UBICACION.DEPARTAMENTO
+                    ''')
+            municipios = c.fetchall()
+            columnas_municipios = [desc[0] for desc in c.description]
+            df_municipios = pd.DataFrame(municipios, columns= columnas_municipios)
+            c.close()
+            conn.close()
+            
+            return df_departamentos, df_municipios
+            
+        except Exception as e:
+            st.write(f'Error al ejecutar la consulta: {e}')
