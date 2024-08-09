@@ -37,6 +37,7 @@ df_departamentos, df_municipios = util.consultaMunicipios()
 # Mostramos las granjas que tienes activas
 
 conn, c  = util.conectarDB()
+
 if conn is not None and c is not None:
     try:
         c.execute(''' SELECT
@@ -56,6 +57,24 @@ if conn is not None and c is not None:
         df_granjas_show = df_granjas_merged[['nombre_granja', 'nombre', 'municipio', 'fecha']]
         df_granjas_show.rename(columns={'nombre_granja':'Granja','nombre':'Departamento' ,'fecha':'Fecha de creación', 'municipio':'Municipio'}, inplace=True)
         
+        c.execute('''
+            SELECT 
+                NOMBRE AS "Galpón",
+                GRANJA.NOMBRE_GRANJA AS "Granja",
+                CAPACIDAD AS "Capacidad",
+                GALPON.ID AS "galpon_id",
+                GRANJA_ID,
+                UBICACION,
+                DEPARTAMENTO,
+                FECHA
+            FROM PUBLIC.GALPON
+            JOIN PUBLIC.GRANJA ON GRANJA.ID = GALPON.GRANJA_ID
+            JOIN PUBLIC.UBICACION ON UBICACION.COD_MUNICIPIO = GRANJA.UBICACION
+            WHERE USUARIO_ID = %s
+        ''', (user_id,))
+        galpones = c.fetchall()
+        columnas = [desc[0] for desc in c.description]
+        df_galpones = pd.DataFrame(galpones, columns=columnas)
         
         c.close()
         conn.close()
@@ -65,19 +84,36 @@ if conn is not None and c is not None:
 else:
     st.write('No se pudo conectar a la base de datos')
 
+# Muestra los galpones según la granja seleccionada
 if df_granjas.shape[0] == 0:
         st.warning('Aún no haz registrado granjas. Puedes agregarlas en **gestionar**', icon=':material/notifications:')
 else:
-    st.write('Actualmente tienes estas granjas activas:',df_granjas_show)
+    st.write(f'Actualmente tienes :red[**{df_granjas_show.shape[0]}**] granjas activas:',df_granjas_show)
+    
+    st.write('Visualiza los galpones según la granja')
+    
+    listado_granjas = list(df_granjas_show['Granja'])
+    listado_granjas.append('Ninguno')
+    index_=len(listado_granjas)
+    
+    ver_galpones = st.selectbox('Selecciona la granja para ver sus galpones',listado_granjas, index=index_-1)
+    
+    if ver_galpones != 'Ninguno':
+        mostrar_galpones = df_galpones[df_galpones['Granja'] == ver_galpones]
+        if mostrar_galpones.shape[0] == 0:
+            st.warning('Aún no haz registrado galpones en esta granja. Puedes agregarlos en **gestionar**', icon=':material/notifications:')
+        else:
+            mostrar_galpones[['Galpón', 'Granja', 'Capacidad']]
+    
 
 ## Se hace check box para gestionar las granjas
 
 with st.container():
-    if st.checkbox('**Gestionar**'):
+    if st.toggle('**Gestionar**'):
         
-        if st.checkbox(':green[Agregar granja o galpon]'):
+        if st.checkbox(':green[**Agregar granja o galpon**]'):
         
-            if st.checkbox(':green[**Agregar granja**]'):
+            if st.checkbox(':green[Agregar granja]'):
                 # Formulario para agregar granja
                 with st.container(border=True):
                     nombre_granja = st.text_input('Ingresa el nombre de la granja:')
@@ -101,8 +137,7 @@ with st.container():
                                 st.success('Se creó la granja con exito')
             
             # Se abre la opción para agregar galpones
-            if st.checkbox(':green[**Agregar galpones**]'):
-                st.write('Se muestran los galpones ')
+            if st.checkbox(':green[Agregar galpones]'):
                 if df_granjas.shape[0] == 0:
                     st.warning('Aún no haz registrado granjas. Puedes agregarlas en **gestionar**', icon=':material/notifications:')
                 
@@ -134,8 +169,21 @@ with st.container():
         
         if st.checkbox(':red[**Eliminar granja o galpón**]'):
         
-            if st.checkbox(':red[**Eliminar granja**]'):
-                st.write('Se elimina granjas')
+            if st.checkbox(':red[Eliminar granja]'):
+                if df_granjas.shape[0] == 0:
+                    st.warning('Aún no haz registrado granjas. Puedes agregarlas en **gestionar**', icon=':material/notifications:')
+                else:
+                    eliminar_granja = st.selectbox('Selecciona la granja a eliminar', options=listado_granjas, index=index_-1)
+                    aceptar_eliminar_granja = st.checkbox('Comprendo que al **Eliminar** el proceso no se puede deshacer')
+                    if st.button('Eliminar granja', type='primary', disabled=not(aceptar_eliminar_granja)):
+                        st.write('Se elimina')
             
-            if st.checkbox(':red[**Eliminar galpon**]'):
-                st.write('Se elimina galpon')
+            if st.checkbox(':red[Eliminar galpon]'):
+                if mostrar_galpones.shape[0] == 0:
+                    st.warning('Aún no haz registrado galpones. Puedes agregarlas en **gestionar**', icon=':material/notifications:')
+                else:
+                    seleccion_granja = st.selectbox('Selecciona la granja', options=listado_granjas, index=index_-1)
+                    eliminar_galpon = st.selectbox('Selecciona el galpón a eliminar', options=listado_granjas, index=index_-1)
+                    aceptar_eliminar_granja = st.checkbox('Comprendo que al **Eliminar** el proceso no se puede deshacer')
+                    if st.button('Eliminar granja', type='primary', disabled=not(aceptar_eliminar_granja)):
+                        st.write('Se elimina')

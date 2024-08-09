@@ -215,3 +215,5 @@ def agregarGalpon(granja_id, capacidad, nombre):
             return {'success':False}
     else:
         st.write('No se pudo conectar a la base de datos')
+
+# Elimina galpones 

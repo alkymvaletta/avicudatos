@@ -15,7 +15,7 @@ if 'usuario' in st.session_state:
 else:
     util.generarMenu()
     with st.form('frmLogin'):
-        ingUser = st.text_input('Usuario:')
+        ingUser = (st.text_input('Usuario:')).upper()
         ingPassword = st.text_input('Contraseña:', type='password')
         btnLogin = st.form_submit_button('Ingresar', type='primary')
         
