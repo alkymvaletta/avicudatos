@@ -166,24 +166,47 @@ with st.container():
                                 if resultado_galpon == True:
                                     st.success('Se creó el galpón exitosamente')
 
-        
+        # La opción parra eliminar granja o galpones
         if st.checkbox(':red[**Eliminar granja o galpón**]'):
-        
-            if st.checkbox(':red[Eliminar granja]'):
-                if df_granjas.shape[0] == 0:
-                    st.warning('Aún no haz registrado granjas. Puedes agregarlas en **gestionar**', icon=':material/notifications:')
-                else:
-                    eliminar_granja = st.selectbox('Selecciona la granja a eliminar', options=listado_granjas, index=index_-1)
-                    aceptar_eliminar_granja = st.checkbox('Comprendo que al **Eliminar** el proceso no se puede deshacer')
-                    if st.button('Eliminar granja', type='primary', disabled=not(aceptar_eliminar_granja)):
-                        st.write('Se elimina')
             
+            #La opción para eliminar una granja
+            with st.container():
+                if st.checkbox(':red[Eliminar granja]'):
+                    if df_granjas.shape[0] == 0:
+                        st.warning('Aún no haz registrado granjas. Puedes agregarlas en **gestionar**', icon=':material/notifications:')
+                    else:
+                        eliminar_granja = st.selectbox('Selecciona la granja a eliminar', options=listado_granjas, index=index_-1)
+                        if eliminar_granja == 'Ninguno':
+                            st.warning('Aún no haz seleccionado la granja **eliminar**. Recuerda que **EL PROCESO NO SE PUEDE DESHACER**', icon=':material/notifications:')
+                        else:
+                            # Se agrega doble verificación de eliminación para activar boton de eliminar.
+                            aceptar_eliminar_granja = st.checkbox('Comprendo que al **Eliminar** el proceso no se puede deshacer', key='granja01')
+                            aceptar_eliminar_todo_granja = st.checkbox('Comprendo que al **Eliminar** la granja tambien se :red[eliminaran los galpones asociados]', key='granja02')
+                            aceptar_def = False
+                            if (aceptar_eliminar_granja == True) and (aceptar_eliminar_todo_granja == True):
+                                aceptar_def = True
+                                # Se extrae el id de la granja a eliminar
+                                eliminar_granja_id  = int(df_granjas['id'][df_granjas['nombre_granja'] == eliminar_granja].values[0])
+                            if st.button('Eliminar granja', type='primary', disabled=not(aceptar_def),key='del_granja'):
+                                st.write('Se elimina')
+
+            # La opción para eliminar un galpón
             if st.checkbox(':red[Eliminar galpon]'):
-                if mostrar_galpones.shape[0] == 0:
+                if df_galpones.shape[0] == 0:
                     st.warning('Aún no haz registrado galpones. Puedes agregarlas en **gestionar**', icon=':material/notifications:')
                 else:
-                    seleccion_granja = st.selectbox('Selecciona la granja', options=listado_granjas, index=index_-1)
-                    eliminar_galpon = st.selectbox('Selecciona el galpón a eliminar', options=listado_granjas, index=index_-1)
-                    aceptar_eliminar_granja = st.checkbox('Comprendo que al **Eliminar** el proceso no se puede deshacer')
-                    if st.button('Eliminar granja', type='primary', disabled=not(aceptar_eliminar_granja)):
-                        st.write('Se elimina')
+                    seleccion_granja_galpon = st.selectbox('Selecciona la granja', options=listado_granjas, index=index_-1)
+                    listado_galpones = df_galpones[df_galpones['Granja'] == seleccion_granja_galpon]
+                    
+                    if seleccion_granja_galpon == 'Ninguno':
+                        st.warning('Selecciona una granja para eliminar un galpón')
+                    elif listado_galpones.shape[0] == 0:
+                        st.warning('La granja seleccionada NO cuenta con galpones.', icon=':material/notifications:')
+                    else:
+                        eliminar_galpon = st.selectbox('Selecciona el galpón a eliminar', options=listado_galpones['Galpón'])
+                        # el id del galpón que se va a eliminar
+                        eliminar_galpon_id = int((listado_galpones['galpon_id'][listado_galpones['Galpón'] == eliminar_galpon]).values[0])
+                        aceptar_eliminar_galpon= st.checkbox('Comprendo que al **Eliminar** el proceso no se puede deshacer', key='galpon01')
+                        if st.button('Eliminar granja', type='primary', disabled=not(aceptar_eliminar_galpon), key='del_galpon'):
+                            st.write('Se elimina')
+    
