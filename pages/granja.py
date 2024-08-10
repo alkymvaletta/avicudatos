@@ -46,7 +46,8 @@ if conn is not None and c is not None:
                 ubicacion, 
                 fecha
             FROM PUBLIC.GRANJA
-            WHERE USUARIO_ID = %s
+            WHERE (USUARIO_ID = %s) AND
+                (es_activa = True)
                 ''', (user_id,))
         granjas = c.fetchall()
         columnas = [desc[0] for desc in c.description]
@@ -70,7 +71,8 @@ if conn is not None and c is not None:
             FROM PUBLIC.GALPON
             JOIN PUBLIC.GRANJA ON GRANJA.ID = GALPON.GRANJA_ID
             JOIN PUBLIC.UBICACION ON UBICACION.COD_MUNICIPIO = GRANJA.UBICACION
-            WHERE USUARIO_ID = %s
+            WHERE (USUARIO_ID = %s) AND
+                (GALPON_ACTIVO = TRUE)
         ''', (user_id,))
         galpones = c.fetchall()
         columnas = [desc[0] for desc in c.description]
@@ -88,9 +90,11 @@ else:
 if df_granjas.shape[0] == 0:
         st.warning('Aún no haz registrado granjas. Puedes agregarlas en **gestionar**', icon=':material/notifications:')
 else:
-    st.write(f'Actualmente tienes :red[**{df_granjas_show.shape[0]}**] granjas activas:',df_granjas_show)
+    st.write(f'Actualmente tienes :red[**{df_granjas_show.shape[0]}**] granjas activas:')
     
-    st.write('Visualiza los galpones según la granja')
+    st.dataframe(df_granjas_show, hide_index=True, use_container_width=True)
+    
+    st.subheader('Visualiza los galpones según la granja')
     
     listado_granjas = list(df_granjas_show['Granja'])
     listado_granjas.append('Ninguno')
@@ -103,11 +107,9 @@ else:
         if mostrar_galpones.shape[0] == 0:
             st.warning('Aún no haz registrado galpones en esta granja. Puedes agregarlos en **gestionar**', icon=':material/notifications:')
         else:
-            mostrar_galpones[['Galpón', 'Granja', 'Capacidad']]
-    
+            st.dataframe(mostrar_galpones[['Galpón', 'Granja', 'Capacidad']],use_container_width=True ,hide_index=True)
 
 ## Se hace check box para gestionar las granjas
-
 with st.container():
     if st.toggle('**Gestionar**'):
         
@@ -135,6 +137,7 @@ with st.container():
                             resultado = util.agregarGranja(user_id,nombre_granja,cod_municipio_granja)
                             if resultado == True:
                                 st.success('Se creó la granja con exito')
+                                st.rerun()
             
             # Se abre la opción para agregar galpones
             if st.checkbox(':green[Agregar galpones]'):
@@ -188,7 +191,13 @@ with st.container():
                                 # Se extrae el id de la granja a eliminar
                                 eliminar_granja_id  = int(df_granjas['id'][df_granjas['nombre_granja'] == eliminar_granja].values[0])
                             if st.button('Eliminar granja', type='primary', disabled=not(aceptar_def),key='del_granja'):
-                                st.write('Se elimina')
+                                resultado_eliminar_granja = util.quitarGranja(eliminar_granja_id)
+                                if resultado_eliminar_granja == True:
+                                    st.success('Se eliminó la granja exitosamente')
+                                    st.rerun()
+                                else:
+                                    resultado_eliminar_granja
+                                    
 
             # La opción para eliminar un galpón
             if st.checkbox(':red[Eliminar galpon]'):
@@ -208,5 +217,9 @@ with st.container():
                         eliminar_galpon_id = int((listado_galpones['galpon_id'][listado_galpones['Galpón'] == eliminar_galpon]).values[0])
                         aceptar_eliminar_galpon= st.checkbox('Comprendo que al **Eliminar** el proceso no se puede deshacer', key='galpon01')
                         if st.button('Eliminar granja', type='primary', disabled=not(aceptar_eliminar_galpon), key='del_galpon'):
-                            st.write('Se elimina')
-    
+                            resultado_eliminar_galpon = util.quitarGalpon(eliminar_galpon_id)
+                            if resultado_eliminar_galpon == True:
+                                st.success('Se eliminó el galpón exitosamente')
+                                st.rerun()
+                            else:
+                                resultado_eliminar_galpon

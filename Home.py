@@ -1,8 +1,7 @@
 import streamlit as st
 import streamlit_authenticator as stauth
 import utilidades as util
-from hash.hash_fun import encriptar_pass
-from hash.hash_fun import verificar_pass
+
 
 
 st.set_page_config(page_title='Avicudatos - Inicio', page_icon='🐔')   

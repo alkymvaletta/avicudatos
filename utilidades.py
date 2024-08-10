@@ -216,4 +216,37 @@ def agregarGalpon(granja_id, capacidad, nombre):
     else:
         st.write('No se pudo conectar a la base de datos')
 
-# Elimina galpones 
+# Elimina galpones
+def quitarGranja(id_granja):
+    conn, c = conectarDB()
+    if conn is not None and c is not None:
+        try:
+            c.execute('''
+                    UPDATE GRANJA
+                    SET ES_ACTIVA = FALSE
+                    WHERE ID = %s
+                    ''', (id_granja,))
+            conn.commit()
+            conn.close()
+            return True
+        
+        except Exception as e:
+            st.error(f"Error al eliminar la granja: {e}")
+            return {'success':False}
+
+def quitarGalpon(id_galpon):
+    conn, c = conectarDB()
+    if conn is not None and c is not None:
+        try:
+            c.execute('''
+                    UPDATE GALPON
+                    SET GALPON_ACTIVO = FALSE
+                    WHERE ID = %s
+                    ''', (id_galpon,))
+            conn.commit()
+            conn.close()
+            return True
+        
+        except Exception as e:
+            st.error(f"Error al eliminar la granja: {e}")
+            return {'success':False}
