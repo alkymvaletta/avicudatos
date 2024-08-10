@@ -19,6 +19,9 @@ util.generarMenu(st.session_state['usuario'])
 
 st.title("Camadas")
 
+st.session_state['granjas']
+st.session_state['galpones']
+
 # Configuración de la conexión con la base de datos
 conn = st.connection('postgresql', type='sql')
 

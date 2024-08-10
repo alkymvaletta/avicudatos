@@ -216,7 +216,63 @@ def agregarGalpon(granja_id, capacidad, nombre):
     else:
         st.write('No se pudo conectar a la base de datos')
 
-# Elimina galpones
+## Devuelve DF con las granjas y galpones que tenga el usuario
+
+def listaGranjaGalpones(user_id, df_municipios):
+    conn, c  = conectarDB()
+
+    if conn is not None and c is not None:
+        try:
+            c.execute(''' SELECT
+                    id,
+                    nombre_granja, 
+                    ubicacion, 
+                    fecha
+                FROM PUBLIC.GRANJA
+                WHERE (USUARIO_ID = %s) AND
+                    (es_activa = True)
+                    ''', (user_id,))
+            granjas = c.fetchall()
+            columnas = [desc[0] for desc in c.description]
+            df_granjas = pd.DataFrame(granjas, columns=columnas)
+            
+            #Se hacen transformaciones al df_granjas
+            # df_granjas_merged = pd.merge(df_granjas, df_municipios, how='left', left_on='ubicacion', right_on='cod_municipio')
+            # df_granjas_show = df_granjas_merged[['nombre_granja', 'nombre', 'municipio', 'fecha']]
+            # df_granjas_show.rename(columns={'nombre_granja':'Granja','nombre':'Departamento' ,'fecha':'Fecha de creación', 'municipio':'Municipio'}, inplace=True)
+            
+            c.execute('''
+                SELECT 
+                    NOMBRE AS "Galpón",
+                    GRANJA.NOMBRE_GRANJA AS "Granja",
+                    CAPACIDAD AS "Capacidad",
+                    GALPON.ID AS "galpon_id",
+                    GRANJA_ID,
+                    UBICACION,
+                    DEPARTAMENTO,
+                    FECHA
+                FROM PUBLIC.GALPON
+                JOIN PUBLIC.GRANJA ON GRANJA.ID = GALPON.GRANJA_ID
+                JOIN PUBLIC.UBICACION ON UBICACION.COD_MUNICIPIO = GRANJA.UBICACION
+                WHERE (USUARIO_ID = %s) AND
+                    (GALPON_ACTIVO = TRUE)
+            ''', (user_id,))
+            galpones = c.fetchall()
+            columnas = [desc[0] for desc in c.description]
+            df_galpones = pd.DataFrame(galpones, columns=columnas)
+            
+            c.close()
+            conn.close()
+            
+            return df_granjas, df_galpones
+            # st.write(df_granjas)
+        except Exception as e:
+            st.write(f'Error al ejecutar la consulta: {e}')
+    else:
+        st.write('No se pudo conectar a la base de datos')
+
+
+# Elimina granjas
 def quitarGranja(id_granja):
     conn, c = conectarDB()
     if conn is not None and c is not None:
@@ -234,6 +290,7 @@ def quitarGranja(id_granja):
             st.error(f"Error al eliminar la granja: {e}")
             return {'success':False}
 
+# Elimina galpones
 def quitarGalpon(id_galpon):
     conn, c = conectarDB()
     if conn is not None and c is not None:
