@@ -379,3 +379,22 @@ def sumaDias(inicial):
     final = inicial + timedelta(days=45)
     return final
 
+# Elimina la camada de la base de datos
+def quitarCamada(id_galpon):
+    conn, c = conectarDB()
+    if conn is not None and c is not None:
+        try:
+            c.execute('''
+                    UPDATE CAMADA
+                    SET CAMADA_ACTIVA = FALSE
+                    WHERE ID = %s
+                    ''', (id_galpon,))
+            conn.commit()
+            conn.close()
+            return True
+        
+        except Exception as e:
+            st.error(f"Error al eliminar la granja: {e}")
+            return {'success':False}
+
+

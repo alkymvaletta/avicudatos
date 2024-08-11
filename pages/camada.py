@@ -56,7 +56,6 @@ else:
     st.sidebar.write(f'Actualmente tienes {df_camadas.shape[0]} camadas activas y aquí las puedes gestionar :point_right:')
 
 df_razas = util.listaRazas()
-#df_galpones
 
 if st.toggle('**Gestionar camadas**'):
     with st.container():
@@ -98,11 +97,22 @@ if st.toggle('**Gestionar camadas**'):
                     if resultado_agg_camada == True:
                         st.success('Se agregó la camada exitosamente', icon=':material/done_all:')
                         st.rerun()
-        
-        #Opción para agregar una camada
-        if st.checkbox(':red[**Eliminar una camada**]', key='del_camada'):
-            st.write('Se elimina camada')
 
+        #Opción para Eliminar una camada
+        if st.checkbox(':red[**Eliminar una camada**]', key='del_camada', value=False):
+            granja_eliminar_camada = st.selectbox('Selecciona la camada a eliminar', options=df_camadas_merged['Granja'])
+            galpon_eliminar_camada = st.selectbox('Selecciona la camada a eliminar', options=df_camadas_merged['Galpón'][df_camadas_merged['Granja'] == granja_eliminar_camada])
+            galpon_eliminar_camada_id = int(df_camadas_merged['id'][df_camadas_merged['Galpón'] == galpon_eliminar_camada].values[0])
+            st.write(f'El galpón seleccionado tiene un total de **{df_camadas_merged["Cantidad"].values[0]}** aves')
+            aceptar_eliminar = st.checkbox('Comprendo que al **Eliminar** el proceso no se puede deshacer', key='camada_eliminar')
+            if st.button('Eliminar camada', disabled=not(aceptar_eliminar), type='primary'):
+                resultado_eliminar_camada = util.quitarCamada(galpon_eliminar_camada_id)
+                if resultado_eliminar_camada:
+                    st.success('Se eliminó la camada exitosamente', icon=':material/done_all:')
+                    st.rerun()
+                else:
+                    resultado_eliminar_camada
+                
 
 ### Se agregan la gestión de consumibles
 if df_camadas.shape[0] > 0:
