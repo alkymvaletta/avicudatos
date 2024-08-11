@@ -58,8 +58,9 @@ else:
 
 df_razas = util.listaRazas()
 
-if st.toggle('**Gestionar camadas**'):
-    with st.container():
+st.subheader('Agrega o elimina camadas')
+with st.container(border=True):
+    if st.toggle('**Gestionar camadas**'):
         # Opción para agregar una camada
         if st.checkbox(':green[**Agregar una camada**]', key='add_camada'):
             granja_camada = st.selectbox('Selecciona la granja', options=lista_granjas)
@@ -117,40 +118,66 @@ if st.toggle('**Gestionar camadas**'):
 ### Se agregan la gestión de consumibles
 if df_camadas.shape[0] > 0:
     st.subheader('Registra la operación de la camada')
-    if st.checkbox('**Consumibles**'):
-        
-        st.write('Registra aquí el consumo de alimento, agua o grit que se le suministre a la camada')
-        
-        # Se agrega la gestión de los alimentos de la camada
-        if st.checkbox('Alimento'):
-            st.write('Aqui se gestiona el alimento')
-        
-        # Se agrega la gestión del consumo de agua de la camada
-        if st.checkbox('Agua'):
-            st.write('Aqui se gestiona el agua')
-        
-        # Se agrega la gestión de suministro del Grit a la camada
-        if st.checkbox('Grit'):
-            st.write('Resgistra aquí el suministro de piedrecillas que el ave debe consumir para ayudar en la digestión del alimento')
+    camada_operar = st.selectbox('Selecciona la camada a operar' ,options=df_camadas_merged['Galpón'])
+    camada_operar_id = int(df_camadas_merged['id'][df_camadas_merged['Galpón'] == camada_operar].values[0])
+    
+    with st.container(border=True):
+        if st.toggle('**Consumibles**'):
+            
+            st.write('Registra aquí el consumo de alimento, agua o grit que se le suministre a la camada')
+            
+            # Se agrega la gestión de los alimentos de la camada
+            if st.checkbox('**Alimento**'):
+                st.write('Registra la cantidad y tipo de alimento suministrado')
+                cantidad_alimento = st.number_input('Cantidad de alimento suministrado en kilogramos', min_value=0.1)
+                tipo_alimento = st.selectbox('Seleccione el tipo de alimento a suministrar', options=['opt1', 'opt2'])
+                fecha_alimento = st.date_input('Ingrese la fecha de suministro')
+                hora_alimento = st.time_input('Ingrese la hora de suministro')
+                st.write('Aqui se gestiona el alimento')
+                st.button('Ingresar datos de alimento')
+            
+            # Se agrega la gestión del consumo de agua de la camada
+            if st.checkbox('**Agua**'):
+                st.write('Registra el consumo de agua de tu camada')
+                cantidad_agua = st.number_input('Cantidad de agua suministrado en litros', min_value=0.1)
+                fecha_agua = st.date_input('Ingrese la fecha de suministro')
+                hora_algua = st.time_input('Ingrese la hora de suministro')
+                st.button('Ingresar datos de alimento')
+                st.write('Aqui se gestiona el agua')
+            
+            # Se agrega la gestión de suministro del Grit a la camada
+            if st.checkbox('**Grit**'):
+                st.write('Resgistra aquí el suministro de piedrecillas que el ave debe consumir para ayudar en la digestión del alimento')
+                suministro_grit = st.selectbox('Se suministró grit a las aves', options=['Si', 'No'])
+                fecha_grit = st.date_input('Ingrese la fecha de suministro')
+                st.button('Ingresar datos de alimento')
+                
+            
+            
+            
 
-    if st.checkbox('**Medicamentos**'):
-        st.write('Registra los medicamentos')
+    with st.container(border=True):
+        if st.toggle('**Medicamentos**'):
+            st.write('Registra los medicamentos')
 
     ### Se agrega la gestión de la mortalidad
-    if st.checkbox('**Mortalidad y descarte**'):
+    with st.container(border=True):
+        if st.toggle('**Mortalidad y descarte**'):
         
-        # Se agrega la gestión de la mortalidad de los pollos en la camada
-        if st.checkbox('Mortalidad'):
-            st.write('Aqui se registraría las muertes')
-        
-        # Se agrega la gestión de la descarte de los pollos en la camada
-        if st.checkbox('Descartes'):
-            st.write('Aqui se registraría las muertes')
+            # Se agrega la gestión de la mortalidad de los pollos en la camada
+            if st.checkbox('Mortalidad'):
+                st.write('Aqui se registraría las muertes')
+            
+            # Se agrega la gestión de la descarte de los pollos en la camada
+            if st.checkbox('Descartes'):
+                st.write('Aqui se registraría las muertes')
 
     ## Se agrega la gestión de los pesajes de los pollos de la camada
-    if st.checkbox('**Pesajes**'):
-        st.write('Aqui se gestiona el alimento')
+    with st.container(border=True):
+        if st.toggle('**Pesajes**'):
+            st.write('Aqui se gestiona el alimento')
 
     ## Se agrega la gestión de los costos relacionados con la camada
-    if st.checkbox('**Costos**'):
-        st.write('Aqui se gestiona el alimento')
+    with st.container(border=True):
+        if st.toggle('**Costos**'):
+            st.write('Aqui se gestiona el alimento')
