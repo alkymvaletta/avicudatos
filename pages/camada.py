@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import utilidades as util
+#import datetime
 from psycopg2 import sql
 from datetime import datetime
 #from PIL import Image
@@ -44,8 +45,8 @@ lista_granjas = sorted(df_galpones['Granja'].unique())
 df_camadas = util.consultarCamadas(user_id)
 df_camadas_merged = pd.merge(df_camadas, df_galpones, how='left', left_on='galpon_id', right_on='galpon_id')
 df_camadas_merged = df_camadas_merged.rename(columns={'cantidad':'Cantidad', 'fecha_inicio':'Fecha ingreso', 'fecha_estimada_sacrificio':'Faena estimada'})
-df_camadas_merged['Fecha ingreso'] = pd.to_datetime(df_camadas_merged['Fecha ingreso'])
-df_camadas_merged['Dias'] = (datetime.now() - df_camadas_merged['Fecha ingreso']).dt.days
+df_camadas_merged['Fecha ingreso'] = pd.to_datetime(df_camadas_merged['Fecha ingreso']).dt.date
+df_camadas_merged['Dias'] = (datetime.now().date() - df_camadas_merged['Fecha ingreso']).apply(lambda x: x.days)
 
 # Muestras las camadas activas o mensaje si no hay ninguna
 if df_camadas.shape[0] == 0:
@@ -112,7 +113,6 @@ if st.toggle('**Gestionar camadas**'):
                     st.rerun()
                 else:
                     resultado_eliminar_camada
-                
 
 ### Se agregan la gestión de consumibles
 if df_camadas.shape[0] > 0:
