@@ -10,6 +10,10 @@ HORIZONTAL = 'src\images\horizontal_logo.png'
 
 st.logo(HORIZONTAL)
 
+#Si no hay usuario registrado se va a Home
+if 'usuario' not in st.session_state:
+    st.switch_page('Home.py')
+
 util.generarMenu(st.session_state['usuario'])
 # Configuration of the page
 

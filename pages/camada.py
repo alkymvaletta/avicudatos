@@ -1,9 +1,9 @@
 import streamlit as st
-import sqlalchemy
-import psycopg2
+import pandas as pd
 import utilidades as util
 from psycopg2 import sql
-from PIL import Image
+from datetime import datetime
+#from PIL import Image
 
 
 # Se agrega logo
@@ -13,22 +13,23 @@ st.set_page_config(page_title="Avicudatos - Camadas", page_icon='🐔')
 
 st.logo(HORIZONTAL)
 
+#Si no hay usuario registrado se va a Home
+if 'usuario' not in st.session_state:
+    st.switch_page('Home.py')
+
 util.generarMenu(st.session_state['usuario'])
 
+user_id = st.session_state['id_usuario']
 # Configuración de la página
 
 st.title("Camadas")
-
-st.session_state['granjas']
-st.session_state['galpones']
-
-# Configuración de la conexión con la base de datos
-conn = st.connection('postgresql', type='sql')
+if 'granjas' and 'galpon' in st.session_state:
+    st.write('No hay sesion state en granja')
+else:
+    df_granjas, df_galpones = util.listaGranjaGalpones(user_id)
 
 # Se configura el sidebar 
 st.sidebar.header("Camadas")
-cant_camadas_activas = 2 #Esto es un test
-st.sidebar.write(f'Actualmente tienes {cant_camadas_activas} camadas activas y aquí las puedes gestionar :point_right:')
 
 # Se configura el texto de la página principal
 st.write(
@@ -37,46 +38,109 @@ st.write(
 
 st.subheader('Tus camadas activas')
 
-st.write('Aqui va el DF con la lista de camadas activas')
+lista_granjas = sorted(df_galpones['Granja'].unique())
 
-st.subheader('Registra la operación de la camada')
+#Consultamos las camadas
+df_camadas = util.consultarCamadas(user_id)
+df_camadas_merged = pd.merge(df_camadas, df_galpones, how='left', left_on='galpon_id', right_on='galpon_id')
+df_camadas_merged = df_camadas_merged.rename(columns={'cantidad':'Cantidad', 'fecha_inicio':'Fecha ingreso', 'fecha_estimada_sacrificio':'Faena estimada'})
+df_camadas_merged['Fecha ingreso'] = pd.to_datetime(df_camadas_merged['Fecha ingreso'])
+df_camadas_merged['Dias'] = (datetime.now() - df_camadas_merged['Fecha ingreso']).dt.days
+
+# Muestras las camadas activas o mensaje si no hay ninguna
+if df_camadas.shape[0] == 0:
+    st.warning('Aún no haz registrado camadas. Puedes agregarlas en **gestionar**', icon=':material/notifications:')
+    st.sidebar.write(f'Actualmente **NO** tienes camadas activas, pero aquí las puedes agregar:point_right:')
+else:
+    st.dataframe(df_camadas_merged[['Granja','Galpón','Cantidad','Dias','Fecha ingreso', 'Faena estimada']], hide_index=True, use_container_width=True)
+    st.sidebar.write(f'Actualmente tienes {df_camadas.shape[0]} camadas activas y aquí las puedes gestionar :point_right:')
+
+df_razas = util.listaRazas()
+#df_galpones
+
+if st.toggle('**Gestionar camadas**'):
+    with st.container():
+        # Opción para agregar una camada
+        if st.checkbox(':green[**Agregar una camada**]', key='add_camada'):
+            granja_camada = st.selectbox('Selecciona la granja', options=lista_granjas)
+            granja_camada_id = int(df_galpones['granja_id'][df_galpones['Granja'] == granja_camada].values[0])
+            galpon_camada = st.selectbox('Selecciona el galpón', options=df_galpones['Galpón'][df_galpones['Granja'] == granja_camada])
+            galpon_camada_id = int(df_galpones['galpon_id'][df_galpones['Galpón'] == galpon_camada].values[0])
+            cant_camada = st.number_input('Ingresa el tamaño de la camada', step=1, min_value=1)
+            raza_camada = st.selectbox('Selecciona la raza', options=df_razas['nombre'].values)
+            raza_camada_id = int(df_razas['id'][df_razas['nombre'] == raza_camada].values[0])
+            fecha_ent_camada = st.date_input('Ingresa fecha de inicio de camada')
+            fecha_faena_camada = util.sumaDias(fecha_ent_camada)
+            
+            if cant_camada > df_galpones['Capacidad'][df_galpones['galpon_id'] == galpon_camada_id].values[0]:
+                st.warning('El tamaño de la camada excede la capacidad del galpón')
+                continuar = st.checkbox('Estas seguro que deseas continuar')
+                if st.button('Agregar camada', disabled=not continuar):
+                    resultado_agg_camada = util.agregarCamada(granja_camada_id, 
+                                                        galpon_camada_id, 
+                                                        cant_camada, 
+                                                        raza_camada_id, 
+                                                        fecha_ent_camada,
+                                                        fecha_faena_camada,
+                                                        user_id)
+                    if resultado_agg_camada == True:
+                        st.success('Se agregó la camada exitosamente', icon=':material/done_all:')
+                        st.rerun()
+            else:
+                if st.button('Agregar camada'):
+                    resultado_agg_camada = util.agregarCamada(granja_camada_id, 
+                                                        galpon_camada_id, 
+                                                        cant_camada, 
+                                                        raza_camada_id, 
+                                                        fecha_ent_camada,
+                                                        fecha_faena_camada,
+                                                        user_id)
+                    if resultado_agg_camada == True:
+                        st.success('Se agregó la camada exitosamente', icon=':material/done_all:')
+                        st.rerun()
+        
+        #Opción para agregar una camada
+        if st.checkbox(':red[**Eliminar una camada**]', key='del_camada'):
+            st.write('Se elimina camada')
 
 
-### Se agregan la gestión de consumibles 
-if st.checkbox('**Consumibles**'):
-    
-    st.write('Registra aquí el consumo de alimento, agua o grit que se le suministre a la camada')
-    
-    # Se agrega la gestión de los alimentos de la camada
-    if st.checkbox('Alimento'):
+### Se agregan la gestión de consumibles
+if df_camadas.shape[0] > 0:
+    st.subheader('Registra la operación de la camada')
+    if st.checkbox('**Consumibles**'):
+        
+        st.write('Registra aquí el consumo de alimento, agua o grit que se le suministre a la camada')
+        
+        # Se agrega la gestión de los alimentos de la camada
+        if st.checkbox('Alimento'):
+            st.write('Aqui se gestiona el alimento')
+        
+        # Se agrega la gestión del consumo de agua de la camada
+        if st.checkbox('Agua'):
+            st.write('Aqui se gestiona el agua')
+        
+        # Se agrega la gestión de suministro del Grit a la camada
+        if st.checkbox('Grit'):
+            st.write('Resgistra aquí el suministro de piedrecillas que el ave debe consumir para ayudar en la digestión del alimento')
+
+    if st.checkbox('**Medicamentos**'):
+        st.write('Registra los medicamentos')
+
+    ### Se agrega la gestión de la mortalidad
+    if st.checkbox('**Mortalidad y descarte**'):
+        
+        # Se agrega la gestión de la mortalidad de los pollos en la camada
+        if st.checkbox('Mortalidad'):
+            st.write('Aqui se registraría las muertes')
+        
+        # Se agrega la gestión de la descarte de los pollos en la camada
+        if st.checkbox('Descartes'):
+            st.write('Aqui se registraría las muertes')
+
+    ## Se agrega la gestión de los pesajes de los pollos de la camada
+    if st.checkbox('**Pesajes**'):
         st.write('Aqui se gestiona el alimento')
-    
-    # Se agrega la gestión del consumo de agua de la camada
-    if st.checkbox('Agua'):
-        st.write('Aqui se gestiona el agua')
-    
-    # Se agrega la gestión de suministro del Grit a la camada
-    if st.checkbox('Grit'):
-        st.write('Resgistra aquí el suministro de piedrecillas que el ave debe consumir para ayudar en la digestión del alimento')
 
-if st.checkbox('**Medicamentos**'):
-    st.write('Registra los medicamentos')
-
-### Se agrega la gestión de la mortalidad
-if st.checkbox('**Mortalidad y descarte**'):
-    
-    # Se agrega la gestión de la mortalidad de los pollos en la camada
-    if st.checkbox('Mortalidad'):
-        st.write('Aqui se registraría las muertes')
-    
-    # Se agrega la gestión de la descarte de los pollos en la camada
-    if st.checkbox('Descartes'):
-        st.write('Aqui se registraría las muertes')
-
-## Se agrega la gestión de los pesajes de los pollos de la camada
-if st.checkbox('**Pesajes**'):
-    st.write('Aqui se gestiona el alimento')
-
-## Se agrega la gestión de los costos relacionados con la camada
-if st.checkbox('**Costos**'):
-    st.write('Aqui se gestiona el alimento')
+    ## Se agrega la gestión de los costos relacionados con la camada
+    if st.checkbox('**Costos**'):
+        st.write('Aqui se gestiona el alimento')

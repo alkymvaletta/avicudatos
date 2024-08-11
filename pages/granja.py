@@ -14,6 +14,10 @@ st.set_page_config(
 
 st.logo(HORIZONTAL)
 
+#Si no hay usuario registrado se va a Home
+if 'usuario' not in st.session_state:
+    st.switch_page('Home.py')
+
 # Se generan menús
 util.generarMenu(st.session_state['usuario'])
 
@@ -36,7 +40,7 @@ df_departamentos, df_municipios = util.consultaMunicipios()
 
 # Mostramos las granjas que tienes activas
 
-df_granjas, df_galpones = util.listaGranjaGalpones(user_id, df_municipios)
+df_granjas, df_galpones = util.listaGranjaGalpones(user_id)
 
 df_granjas_merged = pd.merge(df_granjas, df_municipios, how='left', left_on='ubicacion', right_on='cod_municipio')
 df_granjas_show = df_granjas_merged[['nombre_granja', 'nombre', 'municipio', 'fecha']]

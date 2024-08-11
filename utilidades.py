@@ -5,6 +5,7 @@ import pandas as pd
 import re
 from psycopg2 import errors
 from datetime import date
+from datetime import timedelta
 
 ## Genera los menú en el sidebar
 def generarMenu(usuario = None):
@@ -218,7 +219,7 @@ def agregarGalpon(granja_id, capacidad, nombre):
 
 ## Devuelve DF con las granjas y galpones que tenga el usuario
 
-def listaGranjaGalpones(user_id, df_municipios):
+def listaGranjaGalpones(user_id):
     conn, c  = conectarDB()
 
     if conn is not None and c is not None:
@@ -307,3 +308,74 @@ def quitarGalpon(id_galpon):
         except Exception as e:
             st.error(f"Error al eliminar la granja: {e}")
             return {'success':False}
+
+# Devuelve un df con las camadas activas
+def consultarCamadas(user_id):
+    conn, c = conectarDB()
+    if conn is not None and c is not None:
+        try:
+            c.execute('''
+                    SELECT *
+                    FROM PUBLIC.CAMADA
+                    WHERE (USER_ID = 3)
+	                    AND (CAMADA_ACTIVA = TRUE)
+                    ''', (user_id,))
+            camadas = c.fetchall()
+            columnas = [desc[0] for desc in c.description]
+            df_camadas = pd.DataFrame(camadas, columns=columnas)
+            conn.commit()
+            conn.close()
+            return df_camadas
+        
+        except Exception as e:
+            st.error(f"Error al eliminar la granja: {e}")
+            return {'success':False}
+        
+# Devuelve una lista de las razas
+def listaRazas():
+    conn, c = conectarDB()
+    if conn is not None and c is not None:
+        try:
+            c.execute('''
+                    SELECT *
+                    FROM PUBLIC.RAZAS
+                    ''')
+            camadas = c.fetchall()
+            columnas = [desc[0] for desc in c.description]
+            df_razas = pd.DataFrame(camadas, columns=columnas)
+            conn.commit()
+            conn.close()
+            return df_razas
+        except Exception as e:
+            st.error(f"Error al eliminar la granja: {e}")
+            return {'success':False}
+
+# Agrega camada a la base de datos
+def agregarCamada(granja_id, galpon_id, cant_camada, raza_id, fecha_ent_camada, fecha_faena_camada, user_id):
+    conn, c = conectarDB()
+    if conn is not None and c is not None:
+        try:
+            c.execute('''
+                        INSERT INTO camada(
+                            granja_id,
+                            galpon_id,
+                            cantidad, 
+                            raza,
+                            fecha_inicio,
+                            fecha_estimada_sacrificio,
+                            user_id)
+                        VALUES(%s, %s, %s, %s, %s, %s, %s)
+                    ''', (granja_id,galpon_id, cant_camada, raza_id, fecha_ent_camada, fecha_faena_camada, user_id))
+            conn.commit()
+            conn.close()
+            return True
+        except Exception as e:
+            st.error(f"Error al agregar la camada: {e}")
+            return {'success':False}
+    else:
+        st.write('No se pudo conectar a la base de datos')
+
+def sumaDias(inicial):
+    final = inicial + timedelta(days=45)
+    return final
+
