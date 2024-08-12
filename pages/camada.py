@@ -50,7 +50,7 @@ df_camadas_merged['Dias'] = (datetime.now().date() - df_camadas_merged['Fecha in
 
 # Muestras las camadas activas o mensaje si no hay ninguna
 if df_camadas.shape[0] == 0:
-    st.warning('Aún no haz registrado camadas. Puedes agregarlas en **gestionar**', icon=':material/notifications:')
+    st.info('Aún no haz registrado camadas. Puedes agregarlas en **gestionar**', icon=':material/notifications:')
     st.sidebar.write(f'Actualmente **NO** tienes camadas activas, pero aquí las puedes agregar:point_right:')
 else:
     st.dataframe(df_camadas_merged[['Granja','Galpón','Cantidad','Dias','Fecha ingreso', 'Faena estimada']], hide_index=True, use_container_width=True)
@@ -59,10 +59,12 @@ else:
 df_razas = util.listaRazas()
 
 st.subheader('Agrega o elimina camadas')
+
 with st.container(border=True):
     if st.toggle('**Gestionar camadas**'):
+        tab1, tab2 = st.tabs(['Agregar camada', 'Eliminar camada'])
         # Opción para agregar una camada
-        if st.checkbox(':green[**Agregar una camada**]', key='add_camada'):
+        with tab1:
             granja_camada = st.selectbox('Selecciona la granja', options=lista_granjas)
             granja_camada_id = int(df_galpones['granja_id'][df_galpones['Granja'] == granja_camada].values[0])
             galpon_camada = st.selectbox('Selecciona el galpón', options=df_galpones['Galpón'][df_galpones['Granja'] == granja_camada])
@@ -99,21 +101,24 @@ with st.container(border=True):
                     if resultado_agg_camada == True:
                         st.success('Se agregó la camada exitosamente', icon=':material/done_all:')
                         st.rerun()
-
-        #Opción para Eliminar una camada
-        if st.checkbox(':red[**Eliminar una camada**]', key='del_camada', value=False):
-            granja_eliminar_camada = st.selectbox('Selecciona la camada a eliminar', options=df_camadas_merged['Granja'])
-            galpon_eliminar_camada = st.selectbox('Selecciona la camada a eliminar', options=df_camadas_merged['Galpón'][df_camadas_merged['Granja'] == granja_eliminar_camada])
-            galpon_eliminar_camada_id = int(df_camadas_merged['id'][df_camadas_merged['Galpón'] == galpon_eliminar_camada].values[0])
-            st.write(f'El galpón seleccionado tiene un total de **{df_camadas_merged["Cantidad"].values[0]}** aves')
-            aceptar_eliminar = st.checkbox('Comprendo que al **Eliminar** el proceso no se puede deshacer', key='camada_eliminar')
-            if st.button('Eliminar camada', disabled=not(aceptar_eliminar), type='primary'):
-                resultado_eliminar_camada = util.quitarCamada(galpon_eliminar_camada_id)
-                if resultado_eliminar_camada:
-                    st.success('Se eliminó la camada exitosamente', icon=':material/done_all:')
-                    st.rerun()
-                else:
-                    resultado_eliminar_camada
+        
+        if df_camadas_merged.shape[0] >0:
+            with tab2: #st.checkbox(':red[**Eliminar una camada**]', key='del_camada', value=False):
+                granja_eliminar_camada = st.selectbox('Selecciona la camada a eliminar', options=df_camadas_merged['Granja'])
+                galpon_eliminar_camada = st.selectbox('Selecciona la camada a eliminar', options=df_camadas_merged['Galpón'][df_camadas_merged['Granja'] == granja_eliminar_camada])
+                galpon_eliminar_camada_id = int(df_camadas_merged['id'][df_camadas_merged['Galpón'] == galpon_eliminar_camada].values[0])
+                st.write(f'El galpón seleccionado tiene un total de **{df_camadas_merged["Cantidad"].values[0]}** aves')
+                aceptar_eliminar = st.checkbox('Comprendo que al **Eliminar** el proceso no se puede deshacer', key='camada_eliminar')
+                if st.button('Eliminar camada', disabled=not(aceptar_eliminar), type='primary'):
+                    resultado_eliminar_camada = util.quitarCamada(galpon_eliminar_camada_id)
+                    if resultado_eliminar_camada:
+                        st.success('Se eliminó la camada exitosamente', icon=':material/done_all:')
+                        st.rerun()
+                    else:
+                        resultado_eliminar_camada
+        else:
+            with tab2:
+                st.info('Aún no haz registrado camadas que puedas eliminar', icon=':material/notifications:')
 
 ### Se agregan la gestión de consumibles
 if df_camadas.shape[0] > 0:
@@ -131,30 +136,26 @@ if df_camadas.shape[0] > 0:
                 st.write('Registra la cantidad y tipo de alimento suministrado')
                 cantidad_alimento = st.number_input('Cantidad de alimento suministrado en kilogramos', min_value=0.1)
                 tipo_alimento = st.selectbox('Seleccione el tipo de alimento a suministrar', options=['opt1', 'opt2'])
-                fecha_alimento = st.date_input('Ingrese la fecha de suministro')
-                hora_alimento = st.time_input('Ingrese la hora de suministro')
+                fecha_alimento = st.date_input('Ingrese la fecha de suministro', key='fechaAlimento')
+                hora_alimento = st.time_input('Ingrese la hora de suministro', key='horaAlimento')
                 st.write('Aqui se gestiona el alimento')
-                st.button('Ingresar datos de alimento')
+                st.button('Ingresar datos de alimento', key='btnalimento')
             
             # Se agrega la gestión del consumo de agua de la camada
             if st.checkbox('**Agua**'):
                 st.write('Registra el consumo de agua de tu camada')
                 cantidad_agua = st.number_input('Cantidad de agua suministrado en litros', min_value=0.1)
-                fecha_agua = st.date_input('Ingrese la fecha de suministro')
-                hora_algua = st.time_input('Ingrese la hora de suministro')
-                st.button('Ingresar datos de alimento')
+                fecha_agua = st.date_input('Ingrese la fecha de suministro', key='fechaAgua')
+                hora_agua = st.time_input('Ingrese la hora de suministro', key='horaAgua')
+                st.button('Ingresar datos de alimento', key='btnagua')
                 st.write('Aqui se gestiona el agua')
             
             # Se agrega la gestión de suministro del Grit a la camada
             if st.checkbox('**Grit**'):
                 st.write('Resgistra aquí el suministro de piedrecillas que el ave debe consumir para ayudar en la digestión del alimento')
                 suministro_grit = st.selectbox('Se suministró grit a las aves', options=['Si', 'No'])
-                fecha_grit = st.date_input('Ingrese la fecha de suministro')
-                st.button('Ingresar datos de alimento')
-                
-            
-            
-            
+                fecha_grit = st.date_input('Ingrese la fecha de suministro', key='fechaGrit')
+                st.button('Ingresar datos del grit', key='btngrit')
 
     with st.container(border=True):
         if st.toggle('**Medicamentos**'):
@@ -166,15 +167,27 @@ if df_camadas.shape[0] > 0:
         
             # Se agrega la gestión de la mortalidad de los pollos en la camada
             if st.checkbox('Mortalidad'):
-                st.write('Aqui se registraría las muertes')
-            
+                cantidad_mortalidad = st.number_input('Ingrese la cantidad de aves muertas', min_value=1, step=1)
+                causa_mortalidad = st.selectbox('Seleccione las posibles causas de muerte', options=['opt1', 'opt2'])
+                fecha_mortalidad = st.date_input('Ingrese fecha de la muerte', key='fechaMortalidad')
+                if st.checkbox('Agregar comentario'):
+                    comentario_mortalidad = st.text_input('Ingrese comentario:')
+                st.button('Ingresar datos de mortalidad', key='btnMortalidad')
+
             # Se agrega la gestión de la descarte de los pollos en la camada
             if st.checkbox('Descartes'):
-                st.write('Aqui se registraría las muertes')
+                cantidad_descarte = st.number_input('Ingrese la cantidad de aves descartadas', min_value=1, step=1)
+                fecha_descarte = st.date_input('Ingrese fecha de la muerte', key='fechaDescarte')
+                razon_descarte = st.text_input('Ingrese la razón de descarte')
+                st.button('Ingresar datos de descarte', key='btnDescarte')
+                
 
     ## Se agrega la gestión de los pesajes de los pollos de la camada
     with st.container(border=True):
         if st.toggle('**Pesajes**'):
+            tamano_muestra = st.number_input('Indique la cantidad de pollos a pesar', min_value=1, step=1)
+            st.dataframe()
+                
             st.write('Aqui se gestiona el alimento')
 
     ## Se agrega la gestión de los costos relacionados con la camada

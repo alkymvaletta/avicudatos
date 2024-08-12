@@ -52,7 +52,7 @@ st.session_state['galpones'] = df_galpones
 
 # Muestra los galpones según la granja seleccionada
 if df_granjas.shape[0] == 0:
-        st.warning('Aún no haz registrado granjas. Puedes agregarlas en **gestionar**', icon=':material/notifications:')
+        st.info('Aún no haz registrado granjas. Puedes agregarlas en **gestionar**', icon=':material/notifications:')
 else:
     st.write(f'Actualmente tienes :red[**{df_granjas_show.shape[0]}**] granjas activas:')
     
@@ -69,12 +69,12 @@ else:
     if ver_galpones != 'Ninguno':
         mostrar_galpones = df_galpones[df_galpones['Granja'] == ver_galpones]
         if mostrar_galpones.shape[0] == 0:
-            st.warning('Aún no haz registrado galpones en esta granja. Puedes agregarlos en **gestionar**', icon=':material/notifications:')
+            st.info('Aún no haz registrado galpones en esta granja. Puedes agregarlos en **gestionar**', icon=':material/notifications:')
         else:
             st.dataframe(mostrar_galpones[['Galpón', 'Granja', 'Capacidad']],use_container_width=True ,hide_index=True)
 
 ## Se hace check box para gestionar las granjas
-with st.container():
+with st.container(border=True):
     if st.toggle('**Gestionar**'):
         
         if st.checkbox(':green[**Agregar granja o galpon**]'):
