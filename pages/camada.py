@@ -166,7 +166,8 @@ if df_camadas.shape[0] > 0:
         if st.toggle('**Mortalidad y descarte**'):
         
             # Se agrega la gestión de la mortalidad de los pollos en la camada
-            if st.checkbox('Mortalidad'):
+            tab_mortalidad, tab_descarte = st.tabs(['Mortalidad', 'Descarte'])
+            with tab_mortalidad:
                 cantidad_mortalidad = st.number_input('Ingrese la cantidad de aves muertas', min_value=1, step=1)
                 causa_mortalidad = st.selectbox('Seleccione las posibles causas de muerte', options=['opt1', 'opt2'])
                 fecha_mortalidad = st.date_input('Ingrese fecha de la muerte', key='fechaMortalidad')
@@ -175,7 +176,7 @@ if df_camadas.shape[0] > 0:
                 st.button('Ingresar datos de mortalidad', key='btnMortalidad')
 
             # Se agrega la gestión de la descarte de los pollos en la camada
-            if st.checkbox('Descartes'):
+            with tab_descarte:
                 cantidad_descarte = st.number_input('Ingrese la cantidad de aves descartadas', min_value=1, step=1)
                 fecha_descarte = st.date_input('Ingrese fecha de la muerte', key='fechaDescarte')
                 razon_descarte = st.text_input('Ingrese la razón de descarte')
@@ -185,10 +186,14 @@ if df_camadas.shape[0] > 0:
     ## Se agrega la gestión de los pesajes de los pollos de la camada
     with st.container(border=True):
         if st.toggle('**Pesajes**'):
-            tamano_muestra = st.number_input('Indique la cantidad de pollos a pesar', min_value=1, step=1)
-            st.dataframe()
-                
-            st.write('Aqui se gestiona el alimento')
+            fecha_pesaje = st.date_input('Fecha de la medición', key='fechaPesaje')
+            tamano_muestra_pesaje = st.number_input('Indique la cantidad de pollos a pesar', min_value=1, step=1)
+            pesos = []
+            for i in range(tamano_muestra_pesaje):
+                pesos.append(st.number_input(f'Ingrese el dato {i+1}', step=1, min_value=0, max_value=7000))
+            st.write(pesos)
+            st.write(sum(pesos)/len(pesos))
+            
 
     ## Se agrega la gestión de los costos relacionados con la camada
     with st.container(border=True):
