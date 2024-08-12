@@ -317,7 +317,7 @@ def consultarCamadas(user_id):
             c.execute('''
                     SELECT *
                     FROM PUBLIC.CAMADA
-                    WHERE (USER_ID = 3)
+                    WHERE (USER_ID = %s)
 	                    AND (CAMADA_ACTIVA = TRUE)
                     ''', (user_id,))
             camadas = c.fetchall()

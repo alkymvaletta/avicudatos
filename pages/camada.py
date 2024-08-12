@@ -49,7 +49,14 @@ df_camadas_merged['Fecha ingreso'] = pd.to_datetime(df_camadas_merged['Fecha ing
 df_camadas_merged['Dias'] = (datetime.now().date() - df_camadas_merged['Fecha ingreso']).apply(lambda x: x.days)
 
 # Muestras las camadas activas o mensaje si no hay ninguna
-if df_camadas.shape[0] == 0:
+if (df_granjas.shape[0] == 0):
+    #link = st.page_link('pages/granja.py',label='ir a **Tu granja**')
+    st.info('No tienes granjas registradas. Puedes crearlas en **Tu granja**')
+    quit()
+elif df_galpones.shape[0] == 0:
+    st.info('No tienes galpones registrados. Puedes crearlas en el apartado gestionar de **Tu granja**')
+    quit()
+elif df_camadas.shape[0] == 0:
     st.info('Aún no haz registrado camadas. Puedes agregarlas en **gestionar**', icon=':material/notifications:')
     st.sidebar.write(f'Actualmente **NO** tienes camadas activas, pero aquí las puedes agregar:point_right:')
 else:
@@ -58,8 +65,11 @@ else:
 
 df_razas = util.listaRazas()
 
-st.subheader('Agrega o elimina camadas')
 
+
+
+
+st.subheader('Agrega o elimina camadas')
 with st.container(border=True):
     if st.toggle('**Gestionar camadas**'):
         tab1, tab2 = st.tabs(['Agregar camada', 'Eliminar camada'])
