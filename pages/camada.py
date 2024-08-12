@@ -130,9 +130,9 @@ if df_camadas.shape[0] > 0:
         if st.toggle('**Consumibles**'):
             
             st.write('Registra aquí el consumo de alimento, agua o grit que se le suministre a la camada')
-            
+            tab_alimento, tab_agua, tab_grit = st.tabs(['Alimento', 'Agua', 'Grit'])
             # Se agrega la gestión de los alimentos de la camada
-            if st.checkbox('**Alimento**'):
+            with tab_alimento:
                 st.write('Registra la cantidad y tipo de alimento suministrado')
                 cantidad_alimento = st.number_input('Cantidad de alimento suministrado en kilogramos', min_value=0.1)
                 tipo_alimento = st.selectbox('Seleccione el tipo de alimento a suministrar', options=['opt1', 'opt2'])
@@ -142,7 +142,7 @@ if df_camadas.shape[0] > 0:
                 st.button('Ingresar datos de alimento', key='btnalimento')
             
             # Se agrega la gestión del consumo de agua de la camada
-            if st.checkbox('**Agua**'):
+            with tab_agua:
                 st.write('Registra el consumo de agua de tu camada')
                 cantidad_agua = st.number_input('Cantidad de agua suministrado en litros', min_value=0.1)
                 fecha_agua = st.date_input('Ingrese la fecha de suministro', key='fechaAgua')
@@ -151,7 +151,7 @@ if df_camadas.shape[0] > 0:
                 st.write('Aqui se gestiona el agua')
             
             # Se agrega la gestión de suministro del Grit a la camada
-            if st.checkbox('**Grit**'):
+            with tab_grit:
                 st.write('Resgistra aquí el suministro de piedrecillas que el ave debe consumir para ayudar en la digestión del alimento')
                 suministro_grit = st.selectbox('Se suministró grit a las aves', options=['Si', 'No'])
                 fecha_grit = st.date_input('Ingrese la fecha de suministro', key='fechaGrit')
