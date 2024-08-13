@@ -169,7 +169,12 @@ if df_camadas.shape[0] > 0:
     #Se agrega la gestión 
     with st.container(border=True):
         if st.toggle('**Medicamentos**'):
-            st.write('Registra los medicamentos')
+            fecha_medicacion = st.date_input('Seleccione la fecha de suministro')
+            tipo_medicamento = st.selectbox('Seleccione el tipo de medicamento suministrado', options=['med1', 'med2', 'med3'])
+            dosis_medicamento = st.selectbox('Seleccione la dosis suministrada', options=['1ra Dosis', '2da Dosis'])
+            cant_pollos_medicado = st.number_input('Ingrese el número de aves medicadas', min_value=1, step=1)
+            if st.button('Ingresar datos de medicación', key='btnMedicacion'):
+                st.success('Datos ingresados exitosamente')
 
     ### Se agrega la gestión de la mortalidad
     with st.container(border=True):
