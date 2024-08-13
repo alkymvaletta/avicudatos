@@ -397,4 +397,18 @@ def quitarCamada(id_galpon):
             st.error(f"Error al eliminar la granja: {e}")
             return {'success':False}
 
-
+def cosnultaQuery(query):
+    conn, c = conectarDB()
+    if conn is not None and c is not None:
+        try:
+            c.execute(query)
+            resultado_consulta = c.fetchall()
+            columnas = [desc[0] for desc in c.description]
+            df_consulta = pd.DataFrame(resultado_consulta, columns=columnas)
+            conn.commit()
+            conn.close()
+            return df_consulta
+        
+        except Exception as e:
+            st.error(f"Error al eliminar la granja: {e}")
+            return {'success':False}

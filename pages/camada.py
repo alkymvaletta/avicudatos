@@ -78,7 +78,7 @@ with st.container(border=True):
             granja_camada_id = int(df_galpones['granja_id'][df_galpones['Granja'] == granja_camada].values[0])
             galpon_camada = st.selectbox('Selecciona el galpón', options=df_galpones['Galpón'][df_galpones['Granja'] == granja_camada])
             galpon_camada_id = int(df_galpones['galpon_id'][df_galpones['Galpón'] == galpon_camada].values[0])
-            cant_camada = st.number_input('Ingresa el tamaño de la camada', step=1, min_value=1)
+            cant_camada = st.number_input('Ingresa el número de pollos recibidos', step=1, min_value=1)
             raza_camada = st.selectbox('Selecciona la raza', options=df_razas['nombre'].values)
             raza_camada_id = int(df_razas['id'][df_razas['nombre'] == raza_camada].values[0])
             fecha_ent_camada = st.date_input('Ingresa fecha de inicio de camada')
@@ -143,8 +143,10 @@ if df_camadas.shape[0] > 0:
             # Se agrega la gestión de los alimentos de la camada
             with tab_alimento:
                 st.write('Registra la cantidad y tipo de alimento suministrado')
-                cantidad_alimento = st.number_input('Cantidad de alimento suministrado en kilogramos', min_value=0.1)
-                tipo_alimento = st.selectbox('Seleccione el tipo de alimento a suministrar', options=['opt1', 'opt2'])
+                cantidad_alimento = st.number_input('Cantidad de alimento suministrado en **kilogramos**', min_value=0.1)
+                df_etapas_alimento = util.cosnultaQuery('SELECT * FROM PUBLIC.TIPOS_ALIMENTOS')
+                tipo_alimento = st.selectbox('Seleccione el tipo de alimento a suministrar', options=df_etapas_alimento['etapa_alimento'])
+                tipo_alimento_id = int(df_etapas_alimento['id'][df_etapas_alimento['etapa_alimento'] == tipo_alimento].values[0])
                 fecha_alimento = st.date_input('Ingrese la fecha de suministro', key='fechaAlimento')
                 hora_alimento = st.time_input('Ingrese la hora de suministro', key='horaAlimento')
                 st.write('Aqui se gestiona el alimento')
@@ -156,7 +158,7 @@ if df_camadas.shape[0] > 0:
                 cantidad_agua = st.number_input('Cantidad de agua suministrado en litros', min_value=0.1)
                 fecha_agua = st.date_input('Ingrese la fecha de suministro', key='fechaAgua')
                 hora_agua = st.time_input('Ingrese la hora de suministro', key='horaAgua')
-                st.button('Ingresar datos de alimento', key='btnagua')
+                st.button('Ingresar datos de consumo de agua', key='btnagua')
                 st.write('Aqui se gestiona el agua')
             
             # Se agrega la gestión de suministro del Grit a la camada
@@ -170,8 +172,10 @@ if df_camadas.shape[0] > 0:
     with st.container(border=True):
         if st.toggle('**Medicamentos**'):
             fecha_medicacion = st.date_input('Seleccione la fecha de suministro')
-            tipo_medicamento = st.selectbox('Seleccione el tipo de medicamento suministrado', options=['med1', 'med2', 'med3'])
-            dosis_medicamento = st.selectbox('Seleccione la dosis suministrada', options=['1ra Dosis', '2da Dosis'])
+            df_tipos_mediacion = util.cosnultaQuery('SELECT * FROM PUBLIC.TIPO_MEDICAMENTO')
+            tipo_medicamento = st.selectbox('Seleccione el tipo de medicamento suministrado', options=df_tipos_mediacion['tipo'])
+            tipo_medicamento_id = int(df_tipos_mediacion['id'][df_tipos_mediacion['tipo'] == tipo_medicamento].values[0])
+            dosis_medicamento = st.selectbox('Seleccione la dosis suministrada', options=['1ra Dosis', '2da Dosis', 'Dosis única'])
             cant_pollos_medicado = st.number_input('Ingrese el número de aves medicadas', min_value=1, step=1)
             if st.button('Ingresar datos de medicación', key='btnMedicacion'):
                 st.success('Datos ingresados exitosamente')
