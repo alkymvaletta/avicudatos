@@ -13,7 +13,6 @@ st.logo(HORIZONTAL)
 
 st.header('Avicudatos 🐔', divider='rainbow')
 
-
 if 'usuario' in st.session_state:
     
     usuario = st.session_state['usuario']
@@ -50,32 +49,3 @@ else:
             ''')
     
     st.write('**Aún no te haz registrado o no haz iniciado sesión**')
-    
-# test = st.text_input('Introduzca un texto para probar: ')
-# encriptado = encriptar_pass(test)
-# st.write(encriptado)
-
-# check = bytes(st.text_input('Test de contraseña: '), 'utf-8')
-
-# st.write(f'Es el pass igual {verificar_pass(check, encriptado)}')
-
-#st.page_link('pages/login.py', label= 'Iniciar Sesión', icon=':material/login:')
-
-
-# #test = test + 'Nhame+&*C0$74'
-# test = test.encode('utf-8')
-
-# hashed = bcrypt.hashpw(test, bcrypt.gensalt())
-
-# st.write(hashed)
-
-# x = st.text_input('Introduzca un HASH para probar: ')
-
-# x_encode = x.encode('utf-8')
-
-# resultado = bcrypt.checkpw(x_encode, hashed)
-
-#st.write(resultado)
-
-
-#st.write('Aquí inicia mi tesis')

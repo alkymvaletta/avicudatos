@@ -10,6 +10,8 @@ st.set_page_config(page_title='Avicudatos - Estadisticas de desempeño',page_ico
 
 st.logo(HORIZONTAL)
 
+st.header('Avicudatos 🐔', divider='rainbow')
+
 #Si no hay usuario registrado se va a Home
 if 'usuario' not in st.session_state:
     st.switch_page('Home.py')

@@ -14,6 +14,8 @@ st.set_page_config(page_title="Avicudatos - Camadas", page_icon='🐔')
 
 st.logo(HORIZONTAL)
 
+st.header('Avicudatos 🐔', divider='rainbow')
+
 #Si no hay usuario registrado se va a Home
 if 'usuario' not in st.session_state:
     st.switch_page('Home.py')
@@ -65,10 +67,7 @@ else:
 
 df_razas = util.listaRazas()
 
-
-
-
-
+## Agergar o eliminar camadas
 st.subheader('Agrega o elimina camadas')
 with st.container(border=True):
     if st.toggle('**Gestionar camadas**'):
@@ -167,6 +166,7 @@ if df_camadas.shape[0] > 0:
                 fecha_grit = st.date_input('Ingrese la fecha de suministro', key='fechaGrit')
                 st.button('Ingresar datos del grit', key='btngrit')
 
+    #Se agrega la gestión 
     with st.container(border=True):
         if st.toggle('**Medicamentos**'):
             st.write('Registra los medicamentos')
@@ -198,14 +198,25 @@ if df_camadas.shape[0] > 0:
         if st.toggle('**Pesajes**'):
             fecha_pesaje = st.date_input('Fecha de la medición', key='fechaPesaje')
             tamano_muestra_pesaje = st.number_input('Indique la cantidad de pollos a pesar', min_value=1, step=1)
-            pesos = []
+            pesos = {}
             for i in range(tamano_muestra_pesaje):
-                pesos.append(st.number_input(f'Ingrese el dato {i+1}', step=1, min_value=0, max_value=7000))
-            st.write(pesos)
-            st.write(sum(pesos)/len(pesos))
+                #pesos.append(st.number_input(f'Ingrese el dato {i+1}', step=1, min_value=0, max_value=7000))
+                pesos[f'Muestra {i+1}'] = st.number_input(f'Ingrese el dato {i+1}', step=1, min_value=0, max_value=7000)
+            promedio_pesaje = sum(pesos.values())/tamano_muestra_pesaje
+            if st.button('Registrar pesaje'):
+                st.write(promedio_pesaje)
+                st.write(pesos.values())
+                #st.write(sum(pesos)/len(pesos))
             
 
     ## Se agrega la gestión de los costos relacionados con la camada
     with st.container(border=True):
         if st.toggle('**Costos**'):
-            st.write('Aqui se gestiona el alimento')
+            fecha_costo = st.date_input('Fecha de costo', key='fechaCosto')
+            tipo_costo = st.selectbox('Seleccione el tipo de costo', options=['opt1', 'opt2'])
+            proveedor_costo = st.selectbox('Seleccione el proveedor del servicio o producto', options=['opt3', 'opt4'])
+            valor_unitario_costo = st.number_input('Ingrese el valor unitario', min_value=0, step=1)
+            cantidad_unidades_costo = st.number_input('Ingrese la cantidad', min_value=0, step=1)
+            st.write(f'**TOTAL: ${format((valor_unitario_costo * cantidad_unidades_costo),",")}**')
+            if st.button('Registrar costos'):
+                st.success('Se agregó el costo satisfactoriamente', icon=':material/done_all:')

@@ -12,6 +12,8 @@ st.set_page_config(page_title="Avicudatos - Ventas", page_icon='🐔')
 
 st.logo(HORIZONTAL)
 
+st.header('Avicudatos 🐔', divider='rainbow')
+
 #Si no hay usuario registrado se va a Home
 if 'usuario' not in st.session_state:
     st.switch_page('Home.py')

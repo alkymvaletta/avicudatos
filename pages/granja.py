@@ -12,6 +12,8 @@ st.set_page_config(
     page_title= 'Avicudatos - Granjas y galpones', 
     page_icon='🐔')
 
+st.header('Avicudatos 🐔', divider='rainbow')
+
 st.logo(HORIZONTAL)
 
 #Si no hay usuario registrado se va a Home
