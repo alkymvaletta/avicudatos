@@ -29,6 +29,8 @@ def generarMenu(usuario = None):
             st.page_link('pages/ventas.py', label='Ventas', icon=':material/payments:')
             st.subheader('Evalúa tu desempeño')
             st.page_link('pages/estadistica.py', label='Analíticas', icon=':material/analytics:')
+            st.subheader('Gestiona tus proveedores')
+            st.page_link('pages/proveedores.py', label='Proveedores', icon=':material/approval_delegation:')
             btnSalir=st.button("Cerrar Sesión")
             
             # Boton para cerrar sesión
@@ -408,6 +410,34 @@ def cosnultaQuery(query):
             conn.commit()
             conn.close()
             return df_consulta
+        
+        except Exception as e:
+            st.error(f"Error al eliminar la granja: {e}")
+            return {'success':False}
+
+def consultarProveedores(user_id):
+    conn, c = conectarDB()
+    if conn is not None and c is not None:
+        try:
+            c.execute('''
+                    SELECT
+                    id,
+                    nombre as "Nombre",
+                    nit as "Nit",
+                    contacto as "Contacto",
+                    telefono as "Teléfono",
+                    user_id,
+                    prov_activo
+                    FROM PUBLIC.PROVEEDOR
+                    WHERE (USER_ID = %s)
+	                    AND (PROV_ACTIVO = TRUE)
+                    ''', (user_id,))
+            proveedores = c.fetchall()
+            columnas = [desc[0] for desc in c.description]
+            df_proveedores = pd.DataFrame(proveedores, columns=columnas)
+            conn.commit()
+            conn.close()
+            return df_proveedores
         
         except Exception as e:
             st.error(f"Error al eliminar la granja: {e}")

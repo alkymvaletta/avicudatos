@@ -53,10 +53,10 @@ df_camadas_merged['Dias'] = (datetime.now().date() - df_camadas_merged['Fecha in
 # Muestras las camadas activas o mensaje si no hay ninguna
 if (df_granjas.shape[0] == 0):
     #link = st.page_link('pages/granja.py',label='ir a **Tu granja**')
-    st.info('No tienes granjas registradas. Puedes crearlas en **Tu granja**')
+    st.info('No tienes granjas registradas. Puedes crearlas en **Tu granja**', icon=':material/notifications:')
     st.stop()
 elif df_galpones.shape[0] == 0:
-    st.info('No tienes galpones registrados. Puedes crearlas en el apartado gestionar de **Tu granja**')
+    st.info('No tienes galpones registrados. Puedes crearlas en el apartado gestionar de **Tu granja**', icon=':material/notifications:')
     st.stop()
 elif df_camadas.shape[0] == 0:
     st.info('Aún no haz registrado camadas. Puedes agregarlas en **gestionar**', icon=':material/notifications:')
