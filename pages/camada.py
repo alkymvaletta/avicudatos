@@ -54,10 +54,10 @@ df_camadas_merged['Dias'] = (datetime.now().date() - df_camadas_merged['Fecha in
 if (df_granjas.shape[0] == 0):
     #link = st.page_link('pages/granja.py',label='ir a **Tu granja**')
     st.info('No tienes granjas registradas. Puedes crearlas en **Tu granja**')
-    quit()
+    st.stop()
 elif df_galpones.shape[0] == 0:
     st.info('No tienes galpones registrados. Puedes crearlas en el apartado gestionar de **Tu granja**')
-    quit()
+    st.stop()
 elif df_camadas.shape[0] == 0:
     st.info('Aún no haz registrado camadas. Puedes agregarlas en **gestionar**', icon=':material/notifications:')
     st.sidebar.write(f'Actualmente **NO** tienes camadas activas, pero aquí las puedes agregar:point_right:')
@@ -188,10 +188,12 @@ if df_camadas.shape[0] > 0:
             tab_mortalidad, tab_descarte = st.tabs(['Mortalidad', 'Descarte'])
             with tab_mortalidad:
                 cantidad_mortalidad = st.number_input('Ingrese la cantidad de aves muertas', min_value=1, step=1)
-                causa_mortalidad = st.selectbox('Seleccione las posibles causas de muerte', options=['opt1', 'opt2'])
+                df_causa_mortalidad = util.cosnultaQuery('SELECT * FROM public.causas_mortalidad ORDER BY causa_posible ASC ')
+                causa_mortalidad = st.selectbox('Seleccione las posibles causas de muerte', options=df_causa_mortalidad['causa_posible'])
+                causa_mortalidad_id = int(df_causa_mortalidad['id'][df_causa_mortalidad['causa_posible'] == causa_mortalidad].values[0])
                 fecha_mortalidad = st.date_input('Ingrese fecha de la muerte', key='fechaMortalidad')
                 if st.checkbox('Agregar comentario'):
-                    comentario_mortalidad = st.text_input('Ingrese comentario:')
+                    comentario_mortalidad = st.text_input('Ingrese comentario:', max_chars=300)
                 st.button('Ingresar datos de mortalidad', key='btnMortalidad')
 
             # Se agrega la gestión de la descarte de los pollos en la camada
@@ -209,8 +211,7 @@ if df_camadas.shape[0] > 0:
             tamano_muestra_pesaje = st.number_input('Indique la cantidad de pollos a pesar', min_value=1, step=1)
             pesos = {}
             for i in range(tamano_muestra_pesaje):
-                #pesos.append(st.number_input(f'Ingrese el dato {i+1}', step=1, min_value=0, max_value=7000))
-                pesos[f'Muestra {i+1}'] = st.number_input(f'Ingrese el dato {i+1}', step=1, min_value=0, max_value=7000)
+                pesos[f'Muestra {i+1}'] = st.number_input(f'Ingrese el peso del pollo {i+1}', step=1, min_value=0, max_value=7000)
             promedio_pesaje = sum(pesos.values())/tamano_muestra_pesaje
             if st.button('Registrar pesaje'):
                 st.write(promedio_pesaje)
@@ -222,7 +223,9 @@ if df_camadas.shape[0] > 0:
     with st.container(border=True):
         if st.toggle('**Costos**'):
             fecha_costo = st.date_input('Fecha de costo', key='fechaCosto')
-            tipo_costo = st.selectbox('Seleccione el tipo de costo', options=['opt1', 'opt2'])
+            df_tipo_costo = util.cosnultaQuery('SELECT * FROM public.tipos_costos')
+            tipo_costo = st.selectbox('Seleccione el tipo de costo', options=df_tipo_costo['tipo'])
+            tipo_costo_id = int(df_tipo_costo['id'][df_tipo_costo['tipo'] == tipo_costo].values[0])
             proveedor_costo = st.selectbox('Seleccione el proveedor del servicio o producto', options=['opt3', 'opt4'])
             valor_unitario_costo = st.number_input('Ingrese el valor unitario', min_value=0, step=1)
             cantidad_unidades_costo = st.number_input('Ingrese la cantidad', min_value=0, step=1)
