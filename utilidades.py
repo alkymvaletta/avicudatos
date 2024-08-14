@@ -442,3 +442,25 @@ def consultarProveedores(user_id):
         except Exception as e:
             st.error(f"Error al eliminar la granja: {e}")
             return {'success':False}
+
+def agregarPropveedor(nombre_proveedor,nit_proveedor, contacto_proveedor, tel_proveedor, user_id):
+    conn, c = conectarDB()
+    if conn is not None and c is not None:
+        try:
+            c.execute('''
+                        INSERT INTO proveedor(
+                            nombre,
+                            nit,
+                            contacto,
+                            telefono,
+                            user_id)
+                        VALUES(%s, %s, %s, %s, %s)
+                    ''', (nombre_proveedor,nit_proveedor, contacto_proveedor, tel_proveedor, user_id))
+            conn.commit()
+            conn.close()
+            return True
+        except Exception as e:
+            st.error(f"Error al agregar el proveedor: {e}")
+            return {'success':False}
+    else:
+        st.write('No se pudo conectar a la base de datos')
