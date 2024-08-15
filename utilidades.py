@@ -503,3 +503,44 @@ def agregarAlimento(camada_id, peso, tipo_alimento_id, fecha, hora):
             return {'success':False}
     else:
         st.write('No se pudo conectar a la base de datos')
+
+def agregarAgua(camada_id, cantidad, fecha, hora):
+    conn, c = conectarDB()
+    if conn is not None and c is not None:
+        try:
+            c.execute('''
+                        INSERT INTO agua(
+                            camada_id,
+                            cantidad,
+                            fecha,
+                            hora)
+                        VALUES(%s, %s, %s, %s)
+                    ''', (camada_id, cantidad, fecha, hora))
+            conn.commit()
+            conn.close()
+            return True
+        except Exception as e:
+            st.error(f"Error al agregar el suministro de agua: {e}")
+            return {'success':False}
+    else:
+        st.write('No se pudo conectar a la base de datos')
+
+def agregarGrit(camada_id, suministro, fecha):
+    conn, c = conectarDB()
+    if conn is not None and c is not None:
+        try:
+            c.execute('''
+                        INSERT INTO grit(
+                            camada_id,
+                            suministrado,
+                            fecha)
+                        VALUES(%s, %s, %s)
+                    ''', (camada_id, suministro, fecha))
+            conn.commit()
+            conn.close()
+            return True
+        except Exception as e:
+            st.error(f"Error al agregar el suministro de grit: {e}")
+            return {'success':False}
+    else:
+        st.write('No se pudo conectar a la base de datos')

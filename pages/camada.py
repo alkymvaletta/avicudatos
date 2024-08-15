@@ -162,15 +162,24 @@ if df_camadas.shape[0] > 0:
                 cantidad_agua = st.number_input('Cantidad de agua suministrado en litros', min_value=0.1)
                 fecha_agua = st.date_input('Ingrese la fecha de suministro', key='fechaAgua')
                 hora_agua = st.time_input('Ingrese la hora de suministro', key='horaAgua')
-                st.button('Ingresar datos de consumo de agua', key='btnagua')
-                st.write('Aqui se gestiona el agua')
-            
+                if st.button('Ingresar datos de consumo de agua', key='btnagua'):
+                    resultado_agua = util.agregarAgua(camada_operar_id, cantidad_agua, fecha_agua, hora_agua)
+                    if resultado_agua == True:
+                        st.success('Se agregó el suministro de agua exitosamente', icon=':material/done_all:')
+
             # Se agrega la gestión de suministro del Grit a la camada
             with tab_grit:
                 st.write('Resgistra aquí el suministro de piedrecillas que el ave debe consumir para ayudar en la digestión del alimento')
                 suministro_grit = st.selectbox('Se suministró grit a las aves', options=['Si', 'No'])
+                if suministro_grit == 'Si':
+                    suministro_grit = True
+                else:
+                    suministro_grit = False
                 fecha_grit = st.date_input('Ingrese la fecha de suministro', key='fechaGrit')
-                st.button('Ingresar datos del grit', key='btngrit')
+                if st.button('Ingresar datos del grit', key='btngrit'):
+                    resultado_grit = util.agregarGrit(camada_operar_id, suministro_grit, fecha_grit)
+                    if resultado_grit == True:
+                        st.success('Se agregó el suministro de grit exitosamente', icon=':material/done_all:')
 
     #Se agrega la gestión 
     with st.container(border=True):
