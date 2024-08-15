@@ -547,6 +547,7 @@ def agregarGrit(camada_id, suministro, fecha):
     else:
         st.write('No se pudo conectar a la base de datos')
 
+#Registra costos de producción de la camada
 def agregarCosto(camada_id, tipo_id, proveedor, costo_unitario, cantidad, costo_total, fecha):
     conn, c = conectarDB()
     if conn is not None and c is not None:
@@ -567,6 +568,52 @@ def agregarCosto(camada_id, tipo_id, proveedor, costo_unitario, cantidad, costo_
             return True
         except Exception as e:
             st.error(f"Error al registar el costo: {e}")
+            return {'success':False}
+    else:
+        st.write('No se pudo conectar a la base de datos')
+
+#Registra las muertes de aves de la camada
+def agregarMuerte(camada_id, fecha, cantidad, causa_posible_id, comentario = ''):
+    conn, c = conectarDB()
+    if conn is not None and c is not None:
+        try:
+            c.execute('''
+                        INSERT INTO mortalidad(
+                            camada_id,
+                            fecha,
+                            cantidad,
+                            causa_posible_id,
+                            comentario)
+                        VALUES(%s, %s, %s, %s, %s)
+                    ''', (camada_id, fecha, cantidad, causa_posible_id, comentario))
+            conn.commit()
+            conn.close()
+            return True
+        except Exception as e:
+            st.error(f"Error al registar la mortalidad: {e}")
+            return {'success':False}
+    else:
+        st.write('No se pudo conectar a la base de datos')
+
+#Registra los descartes de aves de la camada
+def agregarDescarte(camada_id,razon, fecha, cantidad):
+    conn, c = conectarDB()
+    if conn is not None and c is not None:
+        try:
+            c.execute('''
+                        INSERT INTO descarte(
+                            camada_id,
+                            razon,
+                            fecha,
+                            cantidad
+                            )
+                        VALUES(%s, %s, %s, %s)
+                    ''', (camada_id, razon, fecha, cantidad))
+            conn.commit()
+            conn.close()
+            return True
+        except Exception as e:
+            st.error(f"Error al registar el descarte: {e}")
             return {'success':False}
     else:
         st.write('No se pudo conectar a la base de datos')

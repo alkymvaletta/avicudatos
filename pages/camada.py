@@ -207,14 +207,26 @@ if df_camadas.shape[0] > 0:
                 fecha_mortalidad = st.date_input('Ingrese fecha de la muerte', key='fechaMortalidad')
                 if st.checkbox('Agregar comentario'):
                     comentario_mortalidad = st.text_input('Ingrese comentario:', max_chars=300)
-                st.button('Ingresar datos de mortalidad', key='btnMortalidad')
+                    if st.button('Ingresar datos de mortalidad', key='btnMortalidad'):
+                        respuesta_mortalidad = util.agregarMuerte(camada_operar_id, fecha_mortalidad,cantidad_mortalidad ,causa_mortalidad_id, comentario_mortalidad)
+                        if respuesta_mortalidad == True:
+                            st.success('Se registró los datos de mortalidad exitosamente', icon=':material/done_all:')
+                else:
+                    if st.button('Ingresar datos de mortalidad', key='btnMortalidad'):
+                        respuesta_mortalidad = util.agregarMuerte(camada_operar_id, fecha_mortalidad,cantidad_mortalidad ,causa_mortalidad_id)
+                        if respuesta_mortalidad == True:
+                            st.success('Se registró los datos de mortalidad exitosamente', icon=':material/done_all:')
+                    
 
             # Se agrega la gestión de la descarte de los pollos en la camada
             with tab_descarte:
                 cantidad_descarte = st.number_input('Ingrese la cantidad de aves descartadas', min_value=1, step=1)
                 fecha_descarte = st.date_input('Ingrese fecha de la muerte', key='fechaDescarte')
                 razon_descarte = st.text_input('Ingrese la razón de descarte')
-                st.button('Ingresar datos de descarte', key='btnDescarte')
+                if st.button('Ingresar datos de descarte', key='btnDescarte'):
+                    respuesta_descarte = util.agregarDescarte(camada_operar_id, razon_descarte, fecha_descarte, cantidad_descarte)
+                    if respuesta_descarte == True:
+                        st.success('Se registró los datos de descarte exitosamente', icon=':material/done_all:')
                 
 
     ## Se agrega la gestión de los pesajes de los pollos de la camada
