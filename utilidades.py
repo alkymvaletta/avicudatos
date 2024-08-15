@@ -220,7 +220,6 @@ def agregarGalpon(granja_id, capacidad, nombre):
         st.write('No se pudo conectar a la base de datos')
 
 ## Devuelve DF con las granjas y galpones que tenga el usuario
-
 def listaGranjaGalpones(user_id):
     conn, c  = conectarDB()
 
@@ -238,12 +237,7 @@ def listaGranjaGalpones(user_id):
             granjas = c.fetchall()
             columnas = [desc[0] for desc in c.description]
             df_granjas = pd.DataFrame(granjas, columns=columnas)
-            
-            #Se hacen transformaciones al df_granjas
-            # df_granjas_merged = pd.merge(df_granjas, df_municipios, how='left', left_on='ubicacion', right_on='cod_municipio')
-            # df_granjas_show = df_granjas_merged[['nombre_granja', 'nombre', 'municipio', 'fecha']]
-            # df_granjas_show.rename(columns={'nombre_granja':'Granja','nombre':'Departamento' ,'fecha':'Fecha de creación', 'municipio':'Municipio'}, inplace=True)
-            
+
             c.execute('''
                 SELECT 
                     NOMBRE AS "Galpón",
@@ -377,6 +371,7 @@ def agregarCamada(granja_id, galpon_id, cant_camada, raza_id, fecha_ent_camada, 
     else:
         st.write('No se pudo conectar a la base de datos')
 
+# Suma días a la fecha inicial de los pollos para estimar la fecha de faena
 def sumaDias(inicial):
     final = inicial + timedelta(days=45)
     return final
@@ -399,6 +394,7 @@ def quitarCamada(id_galpon):
             st.error(f"Error al eliminar la granja: {e}")
             return {'success':False}
 
+# Consulta una query cualquiera y devuelve un DF
 def cosnultaQuery(query):
     conn, c = conectarDB()
     if conn is not None and c is not None:
@@ -415,6 +411,7 @@ def cosnultaQuery(query):
             st.error(f"Error al eliminar la granja: {e}")
             return {'success':False}
 
+# Devuelve un df con los proveedores de acuerdo al usuario
 def consultarProveedores(user_id):
     conn, c = conectarDB()
     if conn is not None and c is not None:
@@ -443,6 +440,7 @@ def consultarProveedores(user_id):
             st.error(f"Error al eliminar la granja: {e}")
             return {'success':False}
 
+# Agrega proveedores a la base de datos
 def agregarPropveedor(nombre_proveedor,nit_proveedor, contacto_proveedor, tel_proveedor, user_id):
     conn, c = conectarDB()
     if conn is not None and c is not None:
@@ -465,6 +463,7 @@ def agregarPropveedor(nombre_proveedor,nit_proveedor, contacto_proveedor, tel_pr
     else:
         st.write('No se pudo conectar a la base de datos')
 
+# Quita proveedores de la base de datos. Los pasa a inactivos
 def quitarProveedor(id_provedor):
     conn, c = conectarDB()
     if conn is not None and c is not None:
@@ -482,6 +481,7 @@ def quitarProveedor(id_provedor):
             st.error(f"Error al eliminar el proveedor: {e}")
             return {'success':False}
 
+# Agrega registro de alimentos de la camada
 def agregarAlimento(camada_id, peso, tipo_alimento_id, fecha, hora):
     conn, c = conectarDB()
     if conn is not None and c is not None:
@@ -504,6 +504,7 @@ def agregarAlimento(camada_id, peso, tipo_alimento_id, fecha, hora):
     else:
         st.write('No se pudo conectar a la base de datos')
 
+# Agrega registro de agua de la camada
 def agregarAgua(camada_id, cantidad, fecha, hora):
     conn, c = conectarDB()
     if conn is not None and c is not None:
@@ -525,6 +526,7 @@ def agregarAgua(camada_id, cantidad, fecha, hora):
     else:
         st.write('No se pudo conectar a la base de datos')
 
+# Agrega registro de grit de la camada
 def agregarGrit(camada_id, suministro, fecha):
     conn, c = conectarDB()
     if conn is not None and c is not None:
@@ -541,6 +543,30 @@ def agregarGrit(camada_id, suministro, fecha):
             return True
         except Exception as e:
             st.error(f"Error al agregar el suministro de grit: {e}")
+            return {'success':False}
+    else:
+        st.write('No se pudo conectar a la base de datos')
+
+def agregarCosto(camada_id, tipo_id, proveedor, costo_unitario, cantidad, costo_total, fecha):
+    conn, c = conectarDB()
+    if conn is not None and c is not None:
+        try:
+            c.execute('''
+                        INSERT INTO costos(
+                            camada_id,
+                            tipo_id,
+                            proveedor_id,
+                            costo_unitario,
+                            cantidad,
+                            costo_total,
+                            fecha)
+                        VALUES(%s, %s, %s, %s, %s, %s, %s)
+                    ''', (camada_id, tipo_id, proveedor, costo_unitario, cantidad, costo_total, fecha))
+            conn.commit()
+            conn.close()
+            return True
+        except Exception as e:
+            st.error(f"Error al registar el costo: {e}")
             return {'success':False}
     else:
         st.write('No se pudo conectar a la base de datos')

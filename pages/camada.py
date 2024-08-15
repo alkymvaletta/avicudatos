@@ -242,6 +242,9 @@ if df_camadas.shape[0] > 0:
             proveedor_costo_id = int(df_proveedores['id'][df_proveedores['Nombre'] == proveedor_costo].values[0])
             valor_unitario_costo = st.number_input('Ingrese el valor unitario', min_value=0, step=1)
             cantidad_unidades_costo = st.number_input('Ingrese la cantidad', min_value=0, step=1)
-            st.write(f'**TOTAL: ${format((valor_unitario_costo * cantidad_unidades_costo),",")}**')
+            total_costo = valor_unitario_costo * cantidad_unidades_costo
+            st.write(f'**TOTAL: ${format(total_costo,",")}**')
             if st.button('Registrar costos'):
-                st.success('Se agregó el costo satisfactoriamente', icon=':material/done_all:')
+                resultado_costo = util.agregarCosto(camada_operar_id, tipo_costo_id, proveedor_costo_id, valor_unitario_costo, cantidad_unidades_costo, total_costo, fecha_costo)
+                if resultado_costo == True:
+                    st.success('Se agregó el costo satisfactoriamente', icon=':material/done_all:')
