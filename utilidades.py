@@ -464,3 +464,20 @@ def agregarPropveedor(nombre_proveedor,nit_proveedor, contacto_proveedor, tel_pr
             return {'success':False}
     else:
         st.write('No se pudo conectar a la base de datos')
+
+def quitarProveedor(id_provedor):
+    conn, c = conectarDB()
+    if conn is not None and c is not None:
+        try:
+            c.execute('''
+                    UPDATE PROVEEDOR
+                    SET PROV_ACTIVO = FALSE
+                    WHERE ID = %s
+                    ''', (id_provedor,))
+            conn.commit()
+            conn.close()
+            return True
+        
+        except Exception as e:
+            st.error(f"Error al eliminar el proveedor: {e}")
+            return {'success':False}

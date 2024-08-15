@@ -40,6 +40,8 @@ st.subheader('Agrega o elimina proveedores')
 with st.container(border=True):
     if st.toggle('Gestionar proveedores'):
         agg_prov, del_prov = st.tabs(['Agregar', 'Eliminar'])
+        
+        # Pestaña para agregar proveedor
         with agg_prov:
             agg_nombre_proveedor = st.text_input('Nombre del proveedor')
             agg_nit_proveedor = st.number_input('Nit del proveedor', step=1, min_value=0)
@@ -54,14 +56,16 @@ with st.container(border=True):
                     st.success('Se agregó el proveedor exitosamente', icon=':material/done_all:')
                     st.rerun()
         
+        # Pestaña para eliminar proveedor
         with del_prov:
             if df_proveedores.shape[0] == 0:
                 st.info('Aún no haz registrado proveedores, puedes hacerlo en la otra pestaña', icon=':material/notifications:')
             else:
-                del_nombre = st.selectbox('Selecciona proveedor a eliminar', options=df_proveedores['Nombre'])
+                del_nombre_prov = st.selectbox('Selecciona proveedor a eliminar', options=df_proveedores['Nombre'])
+                del_nombre_prov_id = int(df_proveedores['id'][df_proveedores['Nombre'] == del_nombre_prov].values[0])
                 aceptar_eliminar = st.checkbox('Acepto que el proceso no se púede deshacer')
-                if st.button('Eliminar proveedor', disabled=not(aceptar_eliminar), type='primary')
-                    resultado_proveedor = util.agregarPropveedor(agg_nombre_proveedor, agg_nit_proveedor, agg_contacto_proveedor, agg_tel_proveedor, user_id)
+                if st.button('Eliminar proveedor', disabled=not(aceptar_eliminar), type='primary'):
+                    resultado_proveedor = util.quitarProveedor(del_nombre_prov_id)
                     if resultado_proveedor == True:
                         st.success('El proveedor se eliminó con exito', icon=':material/done_all:')
                         st.rerun()
