@@ -34,7 +34,7 @@ df_proveedores = util.consultarProveedores(user_id)
 if df_proveedores.shape[0] == 0:
     st.info('Aún no haz registrado proveedores, puedes hacerlo en **gestionar**', icon=':material/notifications:')
 else:
-    st.dataframe(df_proveedores[['Nombre', 'Nit', 'Contacto', 'Teléfono']], hide_index=True)
+    st.dataframe(df_proveedores[['Nombre', 'Nit', 'Contacto', 'Teléfono']], hide_index=True, use_container_width=True)
 
 st.subheader('Agrega o elimina proveedores')
 with st.container(border=True):

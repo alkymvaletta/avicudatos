@@ -481,3 +481,25 @@ def quitarProveedor(id_provedor):
         except Exception as e:
             st.error(f"Error al eliminar el proveedor: {e}")
             return {'success':False}
+
+def agregarAlimento(camada_id, peso, tipo_alimento_id, fecha, hora):
+    conn, c = conectarDB()
+    if conn is not None and c is not None:
+        try:
+            c.execute('''
+                        INSERT INTO alimento(
+                            camada_id,
+                            peso,
+                            tipo_alimento,
+                            fecha,
+                            hora)
+                        VALUES(%s, %s, %s, %s, %s)
+                    ''', (camada_id,peso, tipo_alimento_id, fecha, hora))
+            conn.commit()
+            conn.close()
+            return True
+        except Exception as e:
+            st.error(f"Error al agregar el suministro de alimento: {e}")
+            return {'success':False}
+    else:
+        st.write('No se pudo conectar a la base de datos')

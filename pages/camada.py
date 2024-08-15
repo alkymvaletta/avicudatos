@@ -150,7 +150,11 @@ if df_camadas.shape[0] > 0:
                 fecha_alimento = st.date_input('Ingrese la fecha de suministro', key='fechaAlimento')
                 hora_alimento = st.time_input('Ingrese la hora de suministro', key='horaAlimento')
                 st.write('Aqui se gestiona el alimento')
-                st.button('Ingresar datos de alimento', key='btnalimento')
+                if st.button('Ingresar datos de alimento', key='btnalimento'):
+                    resultado_alimento = util.agregarAlimento(camada_operar_id, cantidad_alimento, tipo_alimento_id, fecha_alimento, hora_alimento)
+                    if resultado_alimento == True:
+                        st.success('Se agregó el suministro de alimento exitosamente', icon=':material/done_all:')
+                        st.rerun()
             
             # Se agrega la gestión del consumo de agua de la camada
             with tab_agua:
@@ -216,17 +220,17 @@ if df_camadas.shape[0] > 0:
             if st.button('Registrar pesaje'):
                 st.write(promedio_pesaje)
                 st.write(pesos.values())
-                #st.write(sum(pesos)/len(pesos))
-            
 
     ## Se agrega la gestión de los costos relacionados con la camada
     with st.container(border=True):
         if st.toggle('**Costos**'):
+            df_proveedores = util.consultarProveedores(user_id)
             fecha_costo = st.date_input('Fecha de costo', key='fechaCosto')
             df_tipo_costo = util.cosnultaQuery('SELECT * FROM public.tipos_costos')
             tipo_costo = st.selectbox('Seleccione el tipo de costo', options=df_tipo_costo['tipo'])
             tipo_costo_id = int(df_tipo_costo['id'][df_tipo_costo['tipo'] == tipo_costo].values[0])
-            proveedor_costo = st.selectbox('Seleccione el proveedor del servicio o producto', options=['opt3', 'opt4'])
+            proveedor_costo = st.selectbox('Seleccione el proveedor del servicio o producto', options=df_proveedores['Nombre'])
+            proveedor_costo_id = int(df_proveedores['id'][df_proveedores['Nombre'] == proveedor_costo].values[0])
             valor_unitario_costo = st.number_input('Ingrese el valor unitario', min_value=0, step=1)
             cantidad_unidades_costo = st.number_input('Ingrese la cantidad', min_value=0, step=1)
             st.write(f'**TOTAL: ${format((valor_unitario_costo * cantidad_unidades_costo),",")}**')
