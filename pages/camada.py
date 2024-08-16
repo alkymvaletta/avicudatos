@@ -234,13 +234,15 @@ if df_camadas.shape[0] > 0:
         if st.toggle('**Pesajes**'):
             fecha_pesaje = st.date_input('Fecha de la medición', key='fechaPesaje')
             tamano_muestra_pesaje = st.number_input('Indique la cantidad de pollos a pesar', min_value=1, step=1)
-            pesos = {}
+            pesos = []
             for i in range(tamano_muestra_pesaje):
-                pesos[f'Muestra {i+1}'] = st.number_input(f'Ingrese el peso del pollo {i+1}', step=1, min_value=0, max_value=7000)
-            promedio_pesaje = sum(pesos.values())/tamano_muestra_pesaje
-            if st.button('Registrar pesaje'):
-                st.write(promedio_pesaje)
-                st.write(pesos.values())
+                pesos.append( st.number_input(f'Ingrese el peso del pollo {i+1}', step=1, min_value=0, max_value=7000))
+            promedio_pesaje= sum(pesos)/tamano_muestra_pesaje
+            pesos_ =str(pesos)
+            if st.button('Registrar pesaje', key='btnPesaje'):
+                respuesta_pesaje = util.agregarPesaje(camada_operar_id, pesos_, fecha_pesaje, tamano_muestra_pesaje, promedio_pesaje)
+                if respuesta_pesaje == True:
+                    st.success('Se registró los datos de pesaje exitosamente', icon=':material/done_all:')
 
     ## Se agrega la gestión de los costos relacionados con la camada
     with st.container(border=True):

@@ -617,3 +617,36 @@ def agregarDescarte(camada_id,razon, fecha, cantidad):
             return {'success':False}
     else:
         st.write('No se pudo conectar a la base de datos')
+
+#Registra los pesajes de las camadas y el promedio de estos
+def agregarPesaje(camada_id, medida, fecha, cant_muestras, promedio):
+    conn, c = conectarDB()
+    if conn is not None and c is not None:
+        try:
+            c.execute('''
+                        INSERT INTO pesos(
+                            camada_id,
+                            medida,
+                            fecha,
+                            cant_muestras
+                            )
+                        VALUES(%s, %s, %s, %s)
+                    ''', (camada_id, medida, fecha, cant_muestras))
+            
+            c.execute('''
+                        INSERT INTO promedio_mediciones_pesos(
+                            camada_id,
+                            promedio,
+                            fecha
+                            )
+                        VALUES(%s, %s, %s)
+                    ''', (camada_id, promedio, fecha))
+            
+            conn.commit()
+            conn.close()
+            return True
+        except Exception as e:
+            st.error(f"Error al registar el pesaje: {e}")
+            return {'success':False}
+    else:
+        st.write('No se pudo conectar a la base de datos')
