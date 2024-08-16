@@ -181,17 +181,54 @@ if df_camadas.shape[0] > 0:
                     if resultado_grit == True:
                         st.success('Se agregó el suministro de grit exitosamente', icon=':material/done_all:')
 
-    #Se agrega la gestión 
+    #Se agrega la gestión medicamentos
     with st.container(border=True):
         if st.toggle('**Medicamentos**'):
-            fecha_medicacion = st.date_input('Seleccione la fecha de suministro')
+            tab_ing_medicamento, tab_medicacion = st.tabs(['Crear Medicamento', 'Registrar Medicación'])
             df_tipos_mediacion = util.cosnultaQuery('SELECT * FROM PUBLIC.TIPO_MEDICAMENTO')
-            tipo_medicamento = st.selectbox('Seleccione el tipo de medicamento suministrado', options=df_tipos_mediacion['tipo'])
-            tipo_medicamento_id = int(df_tipos_mediacion['id'][df_tipos_mediacion['tipo'] == tipo_medicamento].values[0])
-            dosis_medicamento = st.selectbox('Seleccione la dosis suministrada', options=['1ra Dosis', '2da Dosis', 'Dosis única'])
-            cant_pollos_medicado = st.number_input('Ingrese el número de aves medicadas', min_value=1, step=1)
-            if st.button('Ingresar datos de medicación', key='btnMedicacion'):
-                st.success('Datos ingresados exitosamente')
+            
+            # Se crea pestaña para crear medicamentos
+            with tab_ing_medicamento:
+                df_vias_aplicacion = util.cosnultaQuery('SELECT * FROM PUBLIC.VIAS_APLICACION_MEDICACION')
+                st.write('Crea los medicamentos que vas a suministrar a tus aves')
+                tipo_med_ing = st.selectbox('Seleccione el tipo de medicamento a crear', options=df_tipos_mediacion['tipo'])
+                tipo_med_ing_id = int(df_tipos_mediacion['id'][df_tipos_mediacion['tipo'] == tipo_med_ing].values[0])
+                nombre_med_ing = st.text_input('Ingrese el nombre del medicamento')
+                cantDosis_med_ing = st.number_input('Ingrese la cantidad de dosis que requiere el medicamento', step=1, min_value=1)
+                viaAplicacion_med_ing = st.selectbox('Seleccione la via de aplicación del medicamento', options=df_vias_aplicacion['via'])
+                viaAplicacion_med_ing_id = int(df_vias_aplicacion['id'][df_vias_aplicacion['via'] == viaAplicacion_med_ing].values[0])
+                if len(nombre_med_ing) == 0:
+                    st.warning('El nombre del medicamento no puede estar en blanco')
+                else:
+                    if st.button('Crear un nuevo medicamento'):
+                        resultado_add_med = util.crearMedicamento(tipo_med_ing_id, nombre_med_ing, cantDosis_med_ing, viaAplicacion_med_ing_id)
+                        if resultado_add_med == True:
+                            st.success('Se creó un nuevo medicamento exitosamente', icon=':material/done_all:')
+            
+            #Se crea pestaña para registrar medicamento suministrados a la camada
+            with tab_medicacion:
+                st.write('Registra el suministro de medicamentos a tus aves')
+                fecha_medicacion = st.date_input('Seleccione la fecha de suministro')
+                df_tipos_mediacion = util.cosnultaQuery('SELECT * FROM PUBLIC.TIPO_MEDICAMENTO')
+                tipo_medicamento = st.selectbox('Seleccione el tipo de medicamento suministrado', options=df_tipos_mediacion['tipo'])
+                tipo_medicamento_id = int(df_tipos_mediacion['id'][df_tipos_mediacion['tipo'] == tipo_medicamento].values[0])
+                dosis = ['Dosis única', '1ra Dosis', '2da Dosis']
+                dosis_medicamento = st.selectbox('Seleccione la dosis suministrada', options=dosis)
+                dosis_medicamento_id = int(dosis.index(dosis_medicamento))
+                dosis_medicamento_id
+                cant_pollos_medicado = st.number_input('Ingrese el número de aves medicadas', min_value=1, step=1)
+                if st.checkbox('Agregar información adicional'):
+                    lote_medicamento = st.text_input('Ingrese lote de la medicación')
+                    comentario_medicamento = st.text_area('Ingrese comentarios de la medicación')
+                    if st.button('Ingresar datos de medicación', key='btnMedicacion'):
+                        resultado_medicacion = util.agregarMedicacion(camada_operar_id, tipo_medicamento_id, dosis_medicamento, fecha_medicacion, cant_pollos_medicado, lote_medicamento, comentario_medicamento)
+                        if resultado_medicacion == True:
+                            st.success('Se agregó el suministro de medicación exitosamente', icon=':material/done_all:')
+                else:    
+                    if st.button('Ingresar datos de medicación', key='btnMedicacion'):
+                        resultado_medicacion = util.agregarMedicacion(camada_operar_id, tipo_medicamento_id, dosis_medicamento_id, fecha_medicacion, cant_pollos_medicado)
+                        if resultado_medicacion == True:
+                            st.success('Se agregó el suministro de medicación exitosamente', icon=':material/done_all:')
 
     ### Se agrega la gestión de la mortalidad
     with st.container(border=True):
@@ -206,7 +243,7 @@ if df_camadas.shape[0] > 0:
                 causa_mortalidad_id = int(df_causa_mortalidad['id'][df_causa_mortalidad['causa_posible'] == causa_mortalidad].values[0])
                 fecha_mortalidad = st.date_input('Ingrese fecha de la muerte', key='fechaMortalidad')
                 if st.checkbox('Agregar comentario'):
-                    comentario_mortalidad = st.text_input('Ingrese comentario:', max_chars=300)
+                    comentario_mortalidad = st.text_area('Ingrese comentario:', max_chars=300)
                     if st.button('Ingresar datos de mortalidad', key='btnMortalidad'):
                         respuesta_mortalidad = util.agregarMuerte(camada_operar_id, fecha_mortalidad,cantidad_mortalidad ,causa_mortalidad_id, comentario_mortalidad)
                         if respuesta_mortalidad == True:
@@ -222,7 +259,7 @@ if df_camadas.shape[0] > 0:
             with tab_descarte:
                 cantidad_descarte = st.number_input('Ingrese la cantidad de aves descartadas', min_value=1, step=1)
                 fecha_descarte = st.date_input('Ingrese fecha de la muerte', key='fechaDescarte')
-                razon_descarte = st.text_input('Ingrese la razón de descarte')
+                razon_descarte = st.text_area('Ingrese la razón de descarte')
                 if st.button('Ingresar datos de descarte', key='btnDescarte'):
                     respuesta_descarte = util.agregarDescarte(camada_operar_id, razon_descarte, fecha_descarte, cantidad_descarte)
                     if respuesta_descarte == True:

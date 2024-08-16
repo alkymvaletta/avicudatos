@@ -650,3 +650,52 @@ def agregarPesaje(camada_id, medida, fecha, cant_muestras, promedio):
             return {'success':False}
     else:
         st.write('No se pudo conectar a la base de datos')
+
+#Registra medicación suministrada a la camada 
+def agregarMedicacion(camada_id,medicacion_aplicada,dosis, fecha, cant_pollos_medicada, lote = '', comentario = ''):
+    conn, c = conectarDB()
+    if conn is not None and c is not None:
+        try:
+            c.execute('''
+                        INSERT INTO medicacion(
+                            camada_id,
+                            medicacion_aplicada,
+                            dosis,
+                            fecha,
+                            cant_pollos_medicada,
+                            lote,
+                            comentario
+                            )
+                        VALUES(%s, %s, %s, %s, %s, %s, %s)
+                    ''', (camada_id,medicacion_aplicada, dosis, fecha, cant_pollos_medicada, lote, comentario))
+            conn.commit()
+            conn.close()
+            return True
+        except Exception as e:
+            st.error(f"Error al registar el la mediación: {e}")
+            return {'success':False}
+    else:
+        st.write('No se pudo conectar a la base de datos')
+
+#Registra medicamento que se suministra a la camada 
+def crearMedicamento(tipo, nombre, cant_dosis, via_aplicacion):
+    conn, c = conectarDB()
+    if conn is not None and c is not None:
+        try:
+            c.execute('''
+                        INSERT INTO medicamentos(
+                            tipo,
+                            nombre,
+                            cant_dosis,
+                            via_aplicacion
+                            )
+                        VALUES(%s, %s, %s, %s)
+                    ''', (tipo, nombre, cant_dosis, via_aplicacion))
+            conn.commit()
+            conn.close()
+            return True
+        except Exception as e:
+            st.error(f"Error al crear un medicamento: {e}")
+            return {'success':False}
+    else:
+        st.write('No se pudo conectar a la base de datos')
