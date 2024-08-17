@@ -32,14 +32,16 @@ st.subheader('Camadas que puedes sacrificar')
 #Consulta las granjas y galpones
 df_granjas, df_galpones = util.listaGranjaGalpones(user_id)
 
-#Consultamos las camadas
 
+
+#Consultamos las camadas
 with st.container():
     df_camadas = util.consultarCamadas(user_id)
     df_camadas_merged = pd.merge(df_camadas, df_galpones, how='left', left_on='galpon_id', right_on='galpon_id')
-    df_camadas_merged = df_camadas_merged.rename(columns={'cantidad':'Cantidad', 'fecha_inicio':'Fecha ingreso', 'fecha_estimada_sacrificio':'Faena estimada'})
+    df_camadas_merged = df_camadas_merged.rename(columns={'cantidad':'Ingresados', 'fecha_inicio':'Fecha ingreso', 'fecha_estimada_sacrificio':'Sacrificio estimado', 'muertes':'Muertes', 'descartes':'Descartes', 'faenados':'Sacrificados'})
     df_camadas_merged['Fecha ingreso'] = pd.to_datetime(df_camadas_merged['Fecha ingreso']).dt.date
     df_camadas_merged['Dias'] = (datetime.now().date() - df_camadas_merged['Fecha ingreso']).apply(lambda x: x.days)
+    df_camadas_merged['Disponibles'] =df_camadas_merged['Ingresados'] - df_camadas_merged['Muertes'] - df_camadas_merged['Descartes'] - df_camadas_merged['Sacrificados']
 
     # Muestras las camadas activas o mensaje si no hay ninguna
     if (df_granjas.shape[0] == 0):
@@ -53,7 +55,7 @@ with st.container():
         st.sidebar.write(f'Actualmente **NO** tienes camadas activas, pero aquí las puedes agregar:point_right:')
     else:
         st.write(f'Cuentas con **{df_camadas.shape[0]}** camadas activas y las puedes sacrificar ')
-        st.dataframe(df_camadas_merged[['Granja','Galpón','Cantidad','Dias','Fecha ingreso', 'Faena estimada']], hide_index=True, use_container_width=True)
+        st.dataframe(df_camadas_merged[['Granja','Galpón','Fecha ingreso','Sacrificio estimado','Dias', 'Disponibles', 'Sacrificados']], hide_index=True, use_container_width=True)
 
 if st.toggle('Sacrificar aves'):
     camada_sacrificio = st.selectbox('Selecciona la camada a sacrificar', options=df_camadas_merged['Galpón'])
