@@ -347,7 +347,7 @@ def listaRazas():
             return {'success':False}
 
 # Agrega camada a la base de datos
-def agregarCamada(granja_id, galpon_id, cant_camada, raza_id, fecha_ent_camada, fecha_faena_camada, user_id):
+def agregarCamada(granja_id, galpon_id, cant_camada, raza_id, proveedor_id, fecha_ent_camada, fecha_faena_camada, user_id):
     conn, c = conectarDB()
     if conn is not None and c is not None:
         try:
@@ -357,11 +357,12 @@ def agregarCamada(granja_id, galpon_id, cant_camada, raza_id, fecha_ent_camada, 
                             galpon_id,
                             cantidad, 
                             raza,
+                            proveedor,
                             fecha_inicio,
                             fecha_estimada_sacrificio,
                             user_id)
-                        VALUES(%s, %s, %s, %s, %s, %s, %s)
-                    ''', (granja_id,galpon_id, cant_camada, raza_id, fecha_ent_camada, fecha_faena_camada, user_id))
+                        VALUES(%s, %s, %s, %s, %s, %s, %s, %s)
+                    ''', (granja_id, galpon_id, cant_camada, raza_id, proveedor_id, fecha_ent_camada, fecha_faena_camada, user_id))
             conn.commit()
             conn.close()
             return True
@@ -586,6 +587,13 @@ def agregarMuerte(camada_id, fecha, cantidad, causa_posible_id, comentario = '')
                             comentario)
                         VALUES(%s, %s, %s, %s, %s)
                     ''', (camada_id, fecha, cantidad, causa_posible_id, comentario))
+            
+            c.execute('''
+                        UPDATE camada 
+                        SET muertes = muertes + %s  
+                        WHERE id = %s
+                    ''', (cantidad, camada_id))
+            
             conn.commit()
             conn.close()
             return True
@@ -609,6 +617,13 @@ def agregarDescarte(camada_id,razon, fecha, cantidad):
                             )
                         VALUES(%s, %s, %s, %s)
                     ''', (camada_id, razon, fecha, cantidad))
+            
+            c.execute('''
+                        UPDATE camada 
+                        SET descartes = descartes + %s  
+                        WHERE id = %s
+                    ''', (cantidad, camada_id))
+            
             conn.commit()
             conn.close()
             return True

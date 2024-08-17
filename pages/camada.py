@@ -44,9 +44,12 @@ lista_granjas = sorted(df_galpones['Granja'].unique())
 #Consultamos las camadas
 df_camadas = util.consultarCamadas(user_id)
 df_camadas_merged = pd.merge(df_camadas, df_galpones, how='left', left_on='galpon_id', right_on='galpon_id')
-df_camadas_merged = df_camadas_merged.rename(columns={'cantidad':'Cantidad', 'fecha_inicio':'Fecha ingreso', 'fecha_estimada_sacrificio':'Faena estimada'})
+df_camadas_merged = df_camadas_merged.rename(columns={'cantidad':'Ingresados', 'fecha_inicio':'Fecha ingreso', 'fecha_estimada_sacrificio':'Sacrificio estimado', 'muertes':'Muertes', 'descartes':'Descartes', 'faenados':'Sacrificados'})
 df_camadas_merged['Fecha ingreso'] = pd.to_datetime(df_camadas_merged['Fecha ingreso']).dt.date
 df_camadas_merged['Dias'] = (datetime.now().date() - df_camadas_merged['Fecha ingreso']).apply(lambda x: x.days)
+df_camadas_merged['Disponibles'] =df_camadas_merged['Ingresados'] - df_camadas_merged['Muertes'] - df_camadas_merged['Descartes'] - df_camadas_merged['Sacrificados']
+
+#df_camadas_merged
 
 # Muestras las camadas activas o mensaje si no hay ninguna
 if (df_granjas.shape[0] == 0):
@@ -60,7 +63,7 @@ elif df_camadas.shape[0] == 0:
     st.info('Aún no haz registrado camadas. Puedes agregarlas en **gestionar**', icon=':material/notifications:')
     st.sidebar.write(f'Actualmente **NO** tienes camadas activas, pero aquí las puedes agregar:point_right:')
 else:
-    st.dataframe(df_camadas_merged[['Granja','Galpón','Cantidad','Dias','Fecha ingreso', 'Faena estimada']], hide_index=True, use_container_width=True)
+    st.dataframe(df_camadas_merged[['Granja','Galpón','Fecha ingreso','Ingresados', 'Disponibles', 'Muertes', 'Sacrificados','Dias', 'Sacrificio estimado']], hide_index=True, use_container_width=True)
     st.sidebar.write(f'Actualmente tienes {df_camadas.shape[0]} camadas activas y aquí las puedes gestionar :point_right:')
 
 df_razas = util.listaRazas()
@@ -79,6 +82,9 @@ with st.container(border=True):
             cant_camada = st.number_input('Ingresa el número de pollos recibidos', step=1, min_value=1)
             raza_camada = st.selectbox('Selecciona la raza', options=df_razas['nombre'].values)
             raza_camada_id = int(df_razas['id'][df_razas['nombre'] == raza_camada].values[0])
+            df_proveedores = util.consultarProveedores(user_id)
+            proveedor_camada = st.selectbox('Seleccione el proveedor de la camada', options=df_proveedores['Nombre'])
+            proveedor_camada_id = int(df_proveedores['id'][df_proveedores['Nombre'] == proveedor_camada].values[0])
             fecha_ent_camada = st.date_input('Ingresa fecha de inicio de camada')
             fecha_faena_camada = util.sumaDias(fecha_ent_camada)
             
@@ -89,7 +95,8 @@ with st.container(border=True):
                     resultado_agg_camada = util.agregarCamada(granja_camada_id, 
                                                         galpon_camada_id, 
                                                         cant_camada, 
-                                                        raza_camada_id, 
+                                                        raza_camada_id,
+                                                        proveedor_camada_id,
                                                         fecha_ent_camada,
                                                         fecha_faena_camada,
                                                         user_id)
@@ -149,7 +156,11 @@ if df_camadas.shape[0] > 0:
                 hora_alimento = st.time_input('Ingrese la hora de suministro', key='horaAlimento')
                 st.write('Aqui se gestiona el alimento')
                 if st.button('Ingresar datos de alimento', key='btnalimento'):
-                    resultado_alimento = util.agregarAlimento(camada_operar_id, cantidad_alimento, tipo_alimento_id, fecha_alimento, hora_alimento)
+                    resultado_alimento = util.agregarAlimento(camada_operar_id, 
+                                                            cantidad_alimento, 
+                                                            tipo_alimento_id, 
+                                                            fecha_alimento, 
+                                                            hora_alimento)
                     if resultado_alimento == True:
                         st.success('Se agregó el suministro de alimento exitosamente', icon=':material/done_all:')
                         st.rerun()
@@ -161,7 +172,10 @@ if df_camadas.shape[0] > 0:
                 fecha_agua = st.date_input('Ingrese la fecha de suministro', key='fechaAgua')
                 hora_agua = st.time_input('Ingrese la hora de suministro', key='horaAgua')
                 if st.button('Ingresar datos de consumo de agua', key='btnagua'):
-                    resultado_agua = util.agregarAgua(camada_operar_id, cantidad_agua, fecha_agua, hora_agua)
+                    resultado_agua = util.agregarAgua(camada_operar_id, 
+                                                    cantidad_agua, 
+                                                    fecha_agua, 
+                                                    hora_agua)
                     if resultado_agua == True:
                         st.success('Se agregó el suministro de agua exitosamente', icon=':material/done_all:')
 
@@ -175,7 +189,9 @@ if df_camadas.shape[0] > 0:
                     suministro_grit = False
                 fecha_grit = st.date_input('Ingrese la fecha de suministro', key='fechaGrit')
                 if st.button('Ingresar datos del grit', key='btngrit'):
-                    resultado_grit = util.agregarGrit(camada_operar_id, suministro_grit, fecha_grit)
+                    resultado_grit = util.agregarGrit(camada_operar_id, 
+                                                    suministro_grit, 
+                                                    fecha_grit)
                     if resultado_grit == True:
                         st.success('Se agregó el suministro de grit exitosamente', icon=':material/done_all:')
 
@@ -200,7 +216,10 @@ if df_camadas.shape[0] > 0:
                     st.warning('El nombre del medicamento no puede estar en blanco')
                 else:
                     if st.button('Crear un nuevo medicamento'):
-                        resultado_add_med = util.crearMedicamento(tipo_med_ing_id, nombre_med_ing, cantDosis_med_ing, viaAplicacion_med_ing_id)
+                        resultado_add_med = util.crearMedicamento(tipo_med_ing_id, 
+                                                                nombre_med_ing, 
+                                                                cantDosis_med_ing, 
+                                                                viaAplicacion_med_ing_id)
                         if resultado_add_med == True:
                             st.success('Se creó un nuevo medicamento exitosamente', icon=':material/done_all:')
             
@@ -220,7 +239,13 @@ if df_camadas.shape[0] > 0:
                     lote_medicamento = st.text_input('Ingrese lote de la medicación')
                     comentario_medicamento = st.text_area('Ingrese comentarios de la medicación')
                     if st.button('Ingresar datos de medicación', key='btnMedicacion'):
-                        resultado_medicacion = util.agregarMedicacion(camada_operar_id, tipo_medicamento_id, dosis_medicamento, fecha_medicacion, cant_pollos_medicado, lote_medicamento, comentario_medicamento)
+                        resultado_medicacion = util.agregarMedicacion(camada_operar_id, 
+                                                                    tipo_medicamento_id, 
+                                                                    dosis_medicamento, 
+                                                                    fecha_medicacion, 
+                                                                    cant_pollos_medicado, 
+                                                                    lote_medicamento, 
+                                                                    comentario_medicamento)
                         if resultado_medicacion == True:
                             st.success('Se agregó el suministro de medicación exitosamente', icon=':material/done_all:')
                 else:    
@@ -244,12 +269,19 @@ if df_camadas.shape[0] > 0:
                 if st.checkbox('Agregar comentario'):
                     comentario_mortalidad = st.text_area('Ingrese comentario:', max_chars=300)
                     if st.button('Ingresar datos de mortalidad', key='btnMortalidad'):
-                        respuesta_mortalidad = util.agregarMuerte(camada_operar_id, fecha_mortalidad,cantidad_mortalidad ,causa_mortalidad_id, comentario_mortalidad)
+                        respuesta_mortalidad = util.agregarMuerte(camada_operar_id, 
+                                                                fecha_mortalidad,
+                                                                cantidad_mortalidad,
+                                                                causa_mortalidad_id, 
+                                                                comentario_mortalidad)
                         if respuesta_mortalidad == True:
                             st.success('Se registró los datos de mortalidad exitosamente', icon=':material/done_all:')
                 else:
                     if st.button('Ingresar datos de mortalidad', key='btnMortalidad'):
-                        respuesta_mortalidad = util.agregarMuerte(camada_operar_id, fecha_mortalidad,cantidad_mortalidad ,causa_mortalidad_id)
+                        respuesta_mortalidad = util.agregarMuerte(camada_operar_id, 
+                                                                fecha_mortalidad,
+                                                                cantidad_mortalidad,
+                                                                causa_mortalidad_id)
                         if respuesta_mortalidad == True:
                             st.success('Se registró los datos de mortalidad exitosamente', icon=':material/done_all:')
                     
@@ -260,7 +292,10 @@ if df_camadas.shape[0] > 0:
                 fecha_descarte = st.date_input('Ingrese fecha de la muerte', key='fechaDescarte')
                 razon_descarte = st.text_area('Ingrese la razón de descarte')
                 if st.button('Ingresar datos de descarte', key='btnDescarte'):
-                    respuesta_descarte = util.agregarDescarte(camada_operar_id, razon_descarte, fecha_descarte, cantidad_descarte)
+                    respuesta_descarte = util.agregarDescarte(camada_operar_id, 
+                                                            razon_descarte, 
+                                                            fecha_descarte, 
+                                                            cantidad_descarte)
                     if respuesta_descarte == True:
                         st.success('Se registró los datos de descarte exitosamente', icon=':material/done_all:')
                 
@@ -276,7 +311,11 @@ if df_camadas.shape[0] > 0:
             promedio_pesaje= sum(pesos)/tamano_muestra_pesaje
             pesos_ =str(pesos)
             if st.button('Registrar pesaje', key='btnPesaje'):
-                respuesta_pesaje = util.agregarPesaje(camada_operar_id, pesos_, fecha_pesaje, tamano_muestra_pesaje, promedio_pesaje)
+                respuesta_pesaje = util.agregarPesaje(camada_operar_id, 
+                                                    pesos_, 
+                                                    fecha_pesaje, 
+                                                    tamano_muestra_pesaje, 
+                                                    promedio_pesaje)
                 if respuesta_pesaje == True:
                     st.success('Se registró los datos de pesaje exitosamente', icon=':material/done_all:')
 
@@ -295,6 +334,12 @@ if df_camadas.shape[0] > 0:
             total_costo = valor_unitario_costo * cantidad_unidades_costo
             st.write(f'**TOTAL: ${format(total_costo,",")}**')
             if st.button('Registrar costos'):
-                resultado_costo = util.agregarCosto(camada_operar_id, tipo_costo_id, proveedor_costo_id, valor_unitario_costo, cantidad_unidades_costo, total_costo, fecha_costo)
+                resultado_costo = util.agregarCosto(camada_operar_id, 
+                                                    tipo_costo_id, 
+                                                    proveedor_costo_id, 
+                                                    valor_unitario_costo, 
+                                                    cantidad_unidades_costo, 
+                                                    total_costo, 
+                                                    fecha_costo)
                 if resultado_costo == True:
                     st.success('Se agregó el costo satisfactoriamente', icon=':material/done_all:')
