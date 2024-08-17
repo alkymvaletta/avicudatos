@@ -1,7 +1,8 @@
 import streamlit as st
-import psycopg2
-from psycopg2 import sql
 import utilidades as util
+import pandas as pd
+from datetime import datetime
+from psycopg2 import sql
 
 st.set_page_config(page_title="Avicudatos - Faena", page_icon='🐔')
 
@@ -19,83 +20,48 @@ if 'usuario' not in st.session_state:
 util.generarMenu(st.session_state['usuario'])
 # Configuration of the page
 
-st.title("Faena tus camadas ")
+st.title("Sacrifica tus camadas ")
 
+user_id = st.session_state['id_usuario']
 
 st.write(
     """Registra las faenas que realices a tus camadas, tendrás más control de tus rendimientos🐓""")
 
-# # Configurar la conexión a la base de datos
-# def init_connection():
-#     return psycopg2.connect(
-#         host="TU_HOST",
-#         database="TU_DATABASE",
-#         user="TU_USUARIO",
-#         password="TU_CONTRASEÑA"
-#     )
+st.subheader('Camadas que puedes sacrificar')
 
-# # Ejecutar una consulta en la base de datos
-# def run_query(query, params=None):
-#     conn = init_connection()
-#     with conn.cursor() as cur:
-#         cur.execute(query, params)
-#         if query.strip().lower().startswith("select"):
-#             return cur.fetchall()
-#         else:
-#             conn.commit()
+#Consulta las granjas y galpones
+df_granjas, df_galpones = util.listaGranjaGalpones(user_id)
 
+#Consultamos las camadas
 
-# # Crear una función para insertar datos
-# def insert_data(table, data):
-#     keys = data.keys()
-#     values = [data[key] for key in keys]
-#     query = sql.SQL("INSERT INTO {table} ({fields}) VALUES ({values})").format(
-#         table=sql.Identifier(table),
-#         fields=sql.SQL(', ').join(map(sql.Identifier, keys)),
-#         values=sql.SQL(', ').join(sql.Placeholder() * len(values))
-#     )
-#     run_query(query, values)
+with st.container():
+    df_camadas = util.consultarCamadas(user_id)
+    df_camadas_merged = pd.merge(df_camadas, df_galpones, how='left', left_on='galpon_id', right_on='galpon_id')
+    df_camadas_merged = df_camadas_merged.rename(columns={'cantidad':'Cantidad', 'fecha_inicio':'Fecha ingreso', 'fecha_estimada_sacrificio':'Faena estimada'})
+    df_camadas_merged['Fecha ingreso'] = pd.to_datetime(df_camadas_merged['Fecha ingreso']).dt.date
+    df_camadas_merged['Dias'] = (datetime.now().date() - df_camadas_merged['Fecha ingreso']).apply(lambda x: x.days)
 
-# # Crear formularios para cada tabla
-# st.title("Formulario de Entrada de Datos para Avicultura")
+    # Muestras las camadas activas o mensaje si no hay ninguna
+    if (df_granjas.shape[0] == 0):
+        st.info('No tienes granjas registradas. Puedes crearlas en **Tu granja**', icon=':material/notifications:')
+        st.stop()
+    elif df_galpones.shape[0] == 0:
+        st.info('No tienes galpones registrados. Puedes crearlas en el apartado gestionar de **Tu granja**', icon=':material/notifications:')
+        st.stop()
+    elif df_camadas.shape[0] == 0:
+        st.info('Aún no haz registrado camadas. Puedes agregarlas en **gestionar**', icon=':material/notifications:')
+        st.sidebar.write(f'Actualmente **NO** tienes camadas activas, pero aquí las puedes agregar:point_right:')
+    else:
+        st.write(f'Cuentas con **{df_camadas.shape[0]}** camadas activas y las puedes sacrificar ')
+        st.dataframe(df_camadas_merged[['Granja','Galpón','Cantidad','Dias','Fecha ingreso', 'Faena estimada']], hide_index=True, use_container_width=True)
 
-# # Función para crear formulario
-# def create_form(table_name, fields):
-#     st.header(f"Tabla: {table_name.capitalize()}")
-#     with st.form(key=f'{table_name}_form'):
-#         form_data = {}
-#         for field, field_type in fields.items():
-#             if field_type == 'integer':
-#                 form_data[field] = st.number_input(field.capitalize(), min_value=1, step=1)
-#             elif field_type == 'decimal':
-#                 form_data[field] = st.number_input(field.capitalize(), format="%.2f")
-#             elif field_type == 'text':
-#                 form_data[field] = st.text_input(field.capitalize())
-#             elif field_type == 'date':
-#                 form_data[field] = st.date_input(field.capitalize())
-#             elif field_type == 'time':
-#                 form_data[field] = st.time_input(field.capitalize())
-#             elif field_type == 'boolean':
-#                 form_data[field] = st.checkbox(field.capitalize())
-        
-#         submit_button = st.form_submit_button(label='Guardar')
-
-#         if submit_button:
-#             insert_data(table_name, form_data)
-#             st.success(f"Datos de la tabla {table_name} guardados con éxito.")
-
-# # Definiciones de campos para cada tabla
-# tables = {
-#     "faena": {
-#         "cantidad_sacrificio": "integer",
-#         "peso_entero": "integer",
-#         "unidad_medida": "text",
-#         "fecha": "date"
-#     }}
-
-# # Crear formulario si decide el usuario realizarlo
-# for table_name, fields in tables.items():
-#     create_form(table_name, fields)
-# st.button("Terminar Faena")
-
-st.write('dd')
+if st.toggle('Sacrificar aves'):
+    camada_sacrificio = st.selectbox('Selecciona la camada a sacrificar', options=df_camadas_merged['Galpón'])
+    fecha_sacrificio = st.date_input('Ingresa fecha de sacrifio')
+    cant_sacrificio = st.number_input('Ingresa la cantidad de aves sacrificadas', value=None, step=0.01, min_value=0.01, key='cantSacrificio')
+    peso_sacrificio = st.number_input('Ingresa la cantidad de Kilos producidos', value=None, step=0.01, min_value=0.01, key='pesoSacrificio')
+    if cant_sacrificio != None:
+        if st.button('Registrar la Sacrificio'):
+            st.success(f'Se registró el sacrificio de {cant_sacrificio} aves exitosamente', icon=':material/done_all:')
+    else:
+        st.button('Registrar la Sacrificio', )

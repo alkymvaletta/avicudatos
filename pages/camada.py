@@ -1,11 +1,8 @@
 import streamlit as st
 import pandas as pd
 import utilidades as util
-#import datetime
 from psycopg2 import sql
 from datetime import datetime
-#from PIL import Image
-
 
 # Se agrega logo
 HORIZONTAL = 'src\images\horizontal_logo.png'
@@ -26,6 +23,7 @@ user_id = st.session_state['id_usuario']
 # Configuración de la página
 
 st.title("Camadas")
+
 if 'granjas' and 'galpon' in st.session_state:
     st.write('No hay sesion state en granja')
 else:
@@ -187,6 +185,7 @@ if df_camadas.shape[0] > 0:
             tab_ing_medicamento, tab_medicacion = st.tabs(['Crear Medicamento', 'Registrar Medicación'])
             df_tipos_mediacion = util.cosnultaQuery('SELECT * FROM PUBLIC.TIPO_MEDICAMENTO')
             
+            
             # Se crea pestaña para crear medicamentos
             with tab_ing_medicamento:
                 df_vias_aplicacion = util.cosnultaQuery('SELECT * FROM PUBLIC.VIAS_APLICACION_MEDICACION')
@@ -273,7 +272,7 @@ if df_camadas.shape[0] > 0:
             tamano_muestra_pesaje = st.number_input('Indique la cantidad de pollos a pesar', min_value=1, step=1)
             pesos = []
             for i in range(tamano_muestra_pesaje):
-                pesos.append( st.number_input(f'Ingrese el peso del pollo {i+1}', step=1, min_value=0, max_value=7000))
+                pesos.append( st.number_input(f'Ingrese el peso **en gramos** del pollo {i+1}', step=1, min_value=0, max_value=7000))
             promedio_pesaje= sum(pesos)/tamano_muestra_pesaje
             pesos_ =str(pesos)
             if st.button('Registrar pesaje', key='btnPesaje'):

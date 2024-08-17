@@ -23,7 +23,7 @@ st.title('Estadistica de desempeño')
 
 # Conectamos con la database
 
-c  = util.conectarDB()
+conn, c  = util.conectarDB()
 
 # Extraemos los datos de DB con base al query
 c.execute('''SELECT EDAD_EN_DIAS,

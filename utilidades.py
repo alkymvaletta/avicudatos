@@ -24,7 +24,7 @@ def generarMenu(usuario = None):
             st.subheader('Gestiona tu granja')
             st.page_link('pages/granja.py', label='Tu granja', icon=':material/agriculture:')
             st.page_link('pages/camada.py', label='Tus camadas', icon=':material/gite:')
-            st.page_link('pages/faenas.py', label='Faenas', icon=':material/food_bank:')
+            st.page_link('pages/faenas.py', label='Sacrificio', icon=':material/food_bank:')
             st.subheader('Vende tu producto')
             st.page_link('pages/ventas.py', label='Ventas', icon=':material/payments:')
             st.subheader('Evalúa tu desempeño')
