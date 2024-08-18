@@ -63,7 +63,7 @@ elif df_camadas.shape[0] == 0:
     st.info('Aún no haz registrado camadas. Puedes agregarlas en **gestionar**', icon=':material/notifications:')
     st.sidebar.write(f'Actualmente **NO** tienes camadas activas, pero aquí las puedes agregar:point_right:')
 else:
-    st.dataframe(df_camadas_merged[['Granja','Galpón','Fecha ingreso','Ingresados', 'Disponibles', 'Muertes', 'Sacrificados','Dias', 'Sacrificio estimado']], hide_index=True, use_container_width=True)
+    st.dataframe(df_camadas_merged[['Granja','Galpón','Fecha ingreso','Ingresados', 'Disponibles', 'Muertes','Descartes' ,'Sacrificados','Dias', 'Sacrificio estimado']], hide_index=True, use_container_width=True)
     st.sidebar.write(f'Actualmente tienes {df_camadas.shape[0]} camadas activas y aquí las puedes gestionar :point_right:')
 
 df_razas = util.listaRazas()

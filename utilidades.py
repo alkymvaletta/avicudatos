@@ -714,3 +714,32 @@ def crearMedicamento(tipo, nombre, cant_dosis, via_aplicacion):
             return {'success':False}
     else:
         st.write('No se pudo conectar a la base de datos')
+
+def agregarSacrificio(camada_id, fecha, cantidad, peso = ''):
+    conn, c = conectarDB()
+    if conn is not None and c is not None:
+        try:
+            c.execute('''
+                        INSERT INTO faena(
+                            camada_id,
+                            cantidad_sacrificio,
+                            peso_entero,
+                            fecha
+                            )
+                        VALUES(%s, %s, %s, %s)
+                    ''', (camada_id, cantidad, peso, fecha))
+            
+            c.execute('''
+                        UPDATE camada 
+                        SET faenados = faenados + %s  
+                        WHERE id = %s
+                    ''', (cantidad, camada_id))
+            
+            conn.commit()
+            conn.close()
+            return True
+        except Exception as e:
+            st.error(f"Error al registrar el sacrificio: {e}")
+            return {'success':False}
+    else:
+        st.write('No se pudo conectar a la base de datos')
