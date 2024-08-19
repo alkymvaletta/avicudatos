@@ -715,6 +715,7 @@ def crearMedicamento(tipo, nombre, cant_dosis, via_aplicacion):
     else:
         st.write('No se pudo conectar a la base de datos')
 
+#Registra los sacrificios de las aves
 def agregarSacrificio(camada_id, fecha, cantidad, peso = ''):
     conn, c = conectarDB()
     if conn is not None and c is not None:
@@ -743,3 +744,5 @@ def agregarSacrificio(camada_id, fecha, cantidad, peso = ''):
             return {'success':False}
     else:
         st.write('No se pudo conectar a la base de datos')
+
+#Registra la venta de la carne
