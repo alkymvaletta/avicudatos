@@ -409,7 +409,7 @@ def cosnultaQuery(query):
             return df_consulta
         
         except Exception as e:
-            st.error(f"Error al eliminar la granja: {e}")
+            st.error(f"Error realizar la consulta: {e}")
             return {'success':False}
 
 # Devuelve un df con los proveedores de acuerdo al usuario
@@ -716,7 +716,7 @@ def crearMedicamento(tipo, nombre, cant_dosis, via_aplicacion):
         st.write('No se pudo conectar a la base de datos')
 
 #Registra los sacrificios de las aves
-def agregarSacrificio(camada_id, fecha, cantidad, peso = ''):
+def agregarSacrificio(camada_id, fecha, hora,cantidad, peso = ''):
     conn, c = conectarDB()
     if conn is not None and c is not None:
         try:
@@ -725,10 +725,11 @@ def agregarSacrificio(camada_id, fecha, cantidad, peso = ''):
                             camada_id,
                             cantidad_sacrificio,
                             peso_entero,
-                            fecha
+                            fecha,
+                            hora
                             )
-                        VALUES(%s, %s, %s, %s)
-                    ''', (camada_id, cantidad, peso, fecha))
+                        VALUES(%s, %s, %s, %s, %s)
+                    ''', (camada_id, cantidad, peso, fecha, hora))
             
             c.execute('''
                         UPDATE camada 
@@ -746,3 +747,31 @@ def agregarSacrificio(camada_id, fecha, cantidad, peso = ''):
         st.write('No se pudo conectar a la base de datos')
 
 #Registra la venta de la carne
+def registrarVenta(camada_id, faena_id, presa, cantidad, precio_unitario, precio_total,fecha ,comentarios= '', cliente= '', telefono= 0):
+    conn, c = conectarDB()
+    if conn is not None and c is not None:
+        try:
+            c.execute('''
+                        INSERT INTO ventas(
+                            camada_id,
+                            faena_id,
+                            presa,
+                            cantidad,
+                            precio_unitario,
+                            precio_total,
+                            comentarios,
+                            cliente,
+                            telefono,
+                            fecha
+                            )
+                        VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    ''', (camada_id, faena_id, presa, cantidad, precio_unitario, precio_total, comentarios, cliente, telefono, fecha))
+            
+            conn.commit()
+            conn.close()
+            return True
+        except Exception as e:
+            st.error(f"Error al registrar la venta: {e}")
+            return {'success':False}
+    else:
+        st.write('No se pudo conectar a la base de datos')
