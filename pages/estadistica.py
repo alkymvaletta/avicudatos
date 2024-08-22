@@ -71,20 +71,24 @@ df_filtrado = df[
             ]
 
 # Graficamos el consumo de alimentos acumulado
-st.subheader('Consumo de alimento acumulado')
-st.line_chart(df_filtrado, 
-              x= 'edad_en_dias', 
-              y='consumo_alimentos_acumulado', 
-              x_label='Dias', 
-              y_label='Consumo alimento acumulado [g]')
+with st.container(border=True):
+    graph1, graph2 = st.columns(2)
+    with graph1:
+        st.write('**Consumo de alimento acumulado**')
+        st.line_chart(df_filtrado, 
+                    x= 'edad_en_dias', 
+                    y='consumo_alimentos_acumulado', 
+                    x_label='Dias', 
+                    y_label='Consumo alimento acumulado [g]')
 
 # Graficamos el peso
-st.subheader('Ganancia de peso acumulada')
-st.line_chart(df_filtrado, 
-              x= 'edad_en_dias', 
-              y='peso',
-              x_label='Dias',
-              y_label='Peso [g]')
+    with graph2:
+        st.write('**Ganancia de peso acumulada**')
+        st.line_chart(df_filtrado, 
+                    x= 'edad_en_dias', 
+                    y='peso',
+                    x_label='Dias',
+                    y_label='Peso [g]')
 
 
 if st.checkbox('Visualizar datos'):

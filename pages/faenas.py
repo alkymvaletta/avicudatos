@@ -70,10 +70,4 @@ if st.toggle('Sacrificar aves'):
             if resultado_sacrificio == True:
                 st.success(f'Se registró el sacrificio de {cant_sacrificio} aves exitosamente', icon=':material/done_all:')
                 st.rerun()
-    # else:
-    #     if st.button('Registrar la Sacrificio',key='btnSacrificio1'):
-    #         resultado_sacrificio = util.agregarSacrificio(camada_sacrificio_id, fecha_sacrificio, cant_sacrificio, peso_sacrificio)
-    #         if resultado_sacrificio == True:
-    #             st.success(f'Se registró el sacrificio de {cant_sacrificio} aves exitosamente', icon=':material/done_all:')
-
-#df_camadas_merged
+    
