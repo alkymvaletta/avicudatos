@@ -163,7 +163,7 @@ if df_camadas.shape[0] > 0:
                                                             hora_alimento)
                     if resultado_alimento == True:
                         st.success('Se agregó el suministro de alimento exitosamente', icon=':material/done_all:')
-                        st.rerun()
+                        #st.rerun()
             
             # Se agrega la gestión del consumo de agua de la camada
             with tab_agua:
@@ -198,28 +198,6 @@ if df_camadas.shape[0] > 0:
     #Se agrega la gestión medicamentos
     with st.container(border=True):
         if st.toggle('**Medicamentos**'):
-            #tab_ing_medicamento, tab_medicacion = st.tabs(['Crear Medicamento', 'Registrar Medicación'])
-            df_tipos_mediacion = util.cosnultaQuery('SELECT * FROM PUBLIC.TIPO_MEDICAMENTO')
-            # Se crea pestaña para crear medicamentos
-            # with tab_ing_medicamento:
-            #     df_vias_aplicacion = util.cosnultaQuery('SELECT * FROM PUBLIC.VIAS_APLICACION_MEDICACION')
-            #     st.write('Crea los medicamentos que vas a suministrar a tus aves')
-            #     tipo_med_ing = st.selectbox('Seleccione el tipo de medicamento a crear', options=df_tipos_mediacion['tipo'])
-            #     tipo_med_ing_id = int(df_tipos_mediacion['id'][df_tipos_mediacion['tipo'] == tipo_med_ing].values[0])
-            #     nombre_med_ing = st.text_input('Ingrese el nombre del medicamento')
-            #     cantDosis_med_ing = st.number_input('Ingrese la cantidad de dosis que requiere el medicamento', step=1, min_value=1)
-            #     viaAplicacion_med_ing = st.selectbox('Seleccione la via de aplicación del medicamento', options=df_vias_aplicacion['via'])
-            #     viaAplicacion_med_ing_id = int(df_vias_aplicacion['id'][df_vias_aplicacion['via'] == viaAplicacion_med_ing].values[0])
-            #     if len(nombre_med_ing) == 0:
-            #         st.warning('El nombre del medicamento no puede estar en blanco')
-            #     else:
-            #         if st.button('Crear un nuevo medicamento'):
-            #             resultado_add_med = util.crearMedicamento(tipo_med_ing_id, 
-            #                                                     nombre_med_ing, 
-            #                                                     cantDosis_med_ing, 
-            #                                                     viaAplicacion_med_ing_id)
-            #             if resultado_add_med == True:
-            #                 st.success('Se creó un nuevo medicamento exitosamente', icon=':material/done_all:')
             
             #Se crea pestaña para registrar medicamento suministrados a la camada
             #with tab_medicacion:

@@ -123,7 +123,6 @@ with st.container(border=True):
         
         camada_evualuar = st.selectbox('Selecciona la camada', options=df_camadas_merged['galponEingreso'])
         camada_evualuar_id = int(df_camadas_merged['id'][df_camadas_merged['galponEingreso'] == camada_evualuar])
-        
         # Se establecen columnas para las métricas.
         st.divider()
         
@@ -132,8 +131,30 @@ with st.container(border=True):
         with metr1:
             mortalidad = round((df_camadas_merged['Muertes'][df_camadas_merged['id'] == camada_evualuar_id] )/ (df_camadas_merged['Ingresados'][df_camadas_merged['id'] == camada_evualuar_id]),4)*100
             st.metric('Mortalidad', value= f'{float(mortalidad)} %')
-        with metr2:
-            st.metric('Conv. Alimenticia - CA', '67 %', '-1.2 %')
+        with metr2: 
+            #Conversión Alimenticia - CA = Consumo Alimento Promedio / Peso Prom
+            df_consumo_alimento = util.cosnultaQuery(f'''SELECT SUM(PESO) AS TOTAL_ALIMENTO
+                                                        FROM PUBLIC.ALIMENTO
+                                                        WHERE (CAMADA_ID = {camada_evualuar_id})
+                                                        ''')
+            df_promedio_pesos = util.cosnultaQuery(f'''SELECT PROMEDIO
+                                                        FROM PUBLIC.PROMEDIO_MEDICIONES_PESOS
+                                                        WHERE FECHA =
+                                                                (SELECT MAX(FECHA)
+                                                                    FROM PUBLIC.PROMEDIO_MEDICIONES_PESOS
+                                                                    WHERE CAMADA_ID = {camada_evualuar_id})''')
+            
+            #Peso promedio de las aves
+            peso_promedio = float(df_promedio_pesos.values[0])/1000
+            
+            # Consumo promedio de aves ingresadas
+            consumo_promedio = float(round(df_consumo_alimento['total_alimento'].values[0]/df_camadas_merged['Ingresados'].values[0], 4))
+            
+            # Calculo de la conversión alimenticia
+            CA = round(consumo_promedio / peso_promedio, 4)
+            
+            st.metric('Conv. Alimenticia - CA', CA, '-1.2 %')
+        
         with metr3:
             st.metric('Ef. Alimenticia - EA', '45 %', '4.2 %')
         with metr4:
@@ -142,17 +163,33 @@ with st.container(border=True):
         
         st.subheader('Análisis económico')
         metr5, metr6, metr7, metr8 = st.columns(4)
+        
+        # Total costos
         with metr5:
-            valor = 4237876
+            valor = util.cosnultaQuery(f'''SELECT SUM(COSTO_TOTAL)
+                                        FROM PUBLIC.COSTOS
+                                        WHERE CAMADA_ID = {camada_evualuar_id}
+                                    ''')
+            valor = int(valor.values[0])
             st.metric('Total costos', value = f'${format(round(valor/1000000, 3), ",")} M')
+        
+        # total ventas
         with metr6:
             valor_venta= 7234650
             st.metric('Total ventas',value= f'${format(round(valor_venta/1000000, 3) , ",")} M')
+        
+        #Utilidades
         with metr7:
             st.metric('Utilidad total', value= f'${format(round((valor_venta-valor)/1000000, 3), ",")} M')
+        
+        #Porcentaje de utilidades
         with metr8:
-            utilidad = round((valor_venta-valor)/valor_venta, 4)
-            st.metric('Porcentaje Utilidad', value= f'{utilidad*100} %')
+            if valor_venta == 0:
+                
+                st.metric('Porcentaje Utilidad', value= f'{0} %')
+            else:
+                utilidad = round((valor_venta-valor)/valor_venta, 4)
+                st.metric('Porcentaje Utilidad', value= f'{utilidad*100} %')
         st.divider()
         
         st.subheader('Mortalidad y Descarte')
