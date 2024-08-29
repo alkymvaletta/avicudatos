@@ -1,6 +1,7 @@
 import streamlit as st
 import utilidades as util
 import pandas as pd
+import plotly.express as px
 from datetime import datetime
 # Se agrega logo
 HORIZONTAL = 'src\images\horizontal_logo.png'
@@ -229,10 +230,18 @@ with st.container(border=True):
         df_mortalidad_ = df_mortalidad[['fecha', 'Mortalidad']]
         df_mortalidad_descarte = pd.concat([df_mortalidad_, df_descarte_])
         st.scatter_chart(df_mortalidad_descarte, x = 'fecha', y=['Mortalidad', 'Descarte'], x_label='Fecha', y_label='Cantidad', color=["#FF0000", "#0000FF"])
-        df_mortalidad_agg = df_mortalidad.groupby('Causa')['Mortalidad'].sum().reset_index() 
-        df_mortalidad_agg = df_mortalidad_agg.sort_values(by='Mortalidad', ascending=False).reset_index()
-        #df_mortalidad_agg
-        st.bar_chart(df_mortalidad_agg, x='Causa', y='Mortalidad', y_label='Cantidad', color = 'index')
+        df_mortalidad_agg = df_mortalidad.groupby('Causa')['Mortalidad'].sum().reset_index().sort_values(by='Mortalidad', ascending=False)
+        
+        #Se hace la gráfica
+        fig = px.bar(df_mortalidad_agg,
+                     x='Causa',
+                     y='Mortalidad',
+                     color = 'Mortalidad',
+                     text_auto=True, #Muestra el valor de la columna
+                     color_discrete_sequence= px.colors.qualitative.G10,
+                     title='Causas de Mortalidad'
+        )
+        st.plotly_chart(fig, use_container_width=True)
         
         st.divider()
         

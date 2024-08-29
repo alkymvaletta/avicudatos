@@ -1,7 +1,7 @@
 import streamlit as st
 import streamlit_authenticator as stauth
 import utilidades as util
-
+from streamlit_cookies_controller import CookieController
 
 
 st.set_page_config(page_title='Avicudatos - Inicio', page_icon='🐔')   
@@ -19,6 +19,8 @@ if 'usuario' in st.session_state:
     
     util.generarMenu(usuario)
     
+    controller = CookieController()
+    
     st.subheader(f'Analizando el rendimiento de las aves de :red[{usuario}]')
 
     #Genera este texto si el usuario inició sesión
@@ -31,6 +33,8 @@ if 'usuario' in st.session_state:
             relevante para maximizar su éxito. 
             \n¡Descubra cómo AVICUDATOS puede elevar su producción avícola al próximo nivel!
             ''')
+    
+    
     
     # Se genera este texto y menús si el usuario no ha iniciado sesión
 else:
