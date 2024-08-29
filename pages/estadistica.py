@@ -166,21 +166,27 @@ with st.container(border=True):
         
         # Total costos
         with metr5:
-            valor = util.cosnultaQuery(f'''SELECT SUM(COSTO_TOTAL)
+            costo_total = util.cosnultaQuery(f'''SELECT SUM(COSTO_TOTAL)
                                         FROM PUBLIC.COSTOS
                                         WHERE CAMADA_ID = {camada_evualuar_id}
                                     ''')
-            valor = int(valor.values[0])
-            st.metric('Total costos', value = f'${format(round(valor/1000000, 3), ",")} M')
+            costo_total = int(costo_total.values[0])
+            st.metric('Total costos', value = f'${format(round(costo_total/1000000, 3), ",")} M')
         
         # total ventas
         with metr6:
-            valor_venta= 7234650
+            #valor_venta= 7234650
+            valor_venta = util.cosnultaQuery(f'''
+                                            SELECT SUM(PRECIO_TOTAL) AS TOTAL
+                                            FROM PUBLIC.VENTAS
+                                            WHERE CAMADA_ID = {camada_evualuar_id}
+                                            ''')
+            valor_venta = int(valor_venta.values[0])
             st.metric('Total ventas',value= f'${format(round(valor_venta/1000000, 3) , ",")} M')
         
         #Utilidades
         with metr7:
-            st.metric('Utilidad total', value= f'${format(round((valor_venta-valor)/1000000, 3), ",")} M')
+            st.metric('Utilidad total', value= f'${format(round((valor_venta-costo_total)/1000000, 3), ",")} M')
         
         #Porcentaje de utilidades
         with metr8:
@@ -188,8 +194,9 @@ with st.container(border=True):
                 
                 st.metric('Porcentaje Utilidad', value= f'{0} %')
             else:
-                utilidad = round((valor_venta-valor)/valor_venta, 4)
-                st.metric('Porcentaje Utilidad', value= f'{utilidad*100} %')
+                utilidad = (valor_venta-costo_total)/valor_venta
+                utilidad = round(utilidad * 100, 3)
+                st.metric('Porcentaje Utilidad', value= f'{utilidad} %')
         st.divider()
         
         st.subheader('Mortalidad y Descarte')

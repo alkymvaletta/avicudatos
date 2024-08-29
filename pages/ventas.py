@@ -74,7 +74,7 @@ def formVentas(n):
         
         #Opción para agregar comentario a la venta
         if st.checkbox('Agregar un comentario', key=f'check{n+1}'):
-            comentario_venta = st.text_area('Comentario:')
+            comentario_venta = st.text_area('Comentario:', key=f'coment{n}')
             if len(cliente_venta) == 0 or telefono_venta==0:
                 st.warning('Existen campos vacios')
             
