@@ -197,10 +197,43 @@ with st.container(border=True):
                 utilidad = (valor_venta-costo_total)/valor_venta
                 utilidad = round(utilidad * 100, 3)
                 st.metric('Porcentaje Utilidad', value= f'{utilidad} %')
+        
         st.divider()
         
         st.subheader('Mortalidad y Descarte')
-        st.write('Se hace grafico st.scatter_chart donde muestre las muertes en un color y los descartes en otro donde se vea las muertes de las aves')
+        
+        ### Se hace grafico st.scatter_chart donde muestre las muertes en un color y los descartes en otro
+        ### donde se vea las muertes de las aves
+        
+        
+        df_mortalidad = util.cosnultaQuery(f'''
+                                            SELECT CAMADA_ID,
+                                                FECHA,
+                                                CANTIDAD AS "Mortalidad",
+                                                CAUSAS_MORTALIDAD.CAUSA_POSIBLE as "Causa"
+                                            FROM PUBLIC.MORTALIDAD
+                                            JOIN PUBLIC.CAUSAS_MORTALIDAD ON CAUSAS_MORTALIDAD.ID = MORTALIDAD.CAUSA_POSIBLE_ID
+                                            WHERE CAMADA_ID = {camada_evualuar_id}
+                                            ''')
+        df_descarte = util.cosnultaQuery(f'''
+                                        SELECT CAMADA_ID,
+                                            RAZON,
+                                            FECHA,
+                                            CANTIDAD AS "Descarte"
+                                        FROM PUBLIC.DESCARTE
+                                        WHERE CAMADA_ID = {camada_evualuar_id}
+                                        ''')
+        
+        # Hacemos grafico de barras por las causas de muerte
+        df_descarte_ = df_descarte[['fecha', 'Descarte']]
+        df_mortalidad_ = df_mortalidad[['fecha', 'Mortalidad']]
+        df_mortalidad_descarte = pd.concat([df_mortalidad_, df_descarte_])
+        st.scatter_chart(df_mortalidad_descarte, x = 'fecha', y=['Mortalidad', 'Descarte'], x_label='Fecha', y_label='Cantidad', color=["#FF0000", "#0000FF"])
+        df_mortalidad_agg = df_mortalidad.groupby('Causa')['Mortalidad'].sum().reset_index() 
+        df_mortalidad_agg = df_mortalidad_agg.sort_values(by='Mortalidad', ascending=False).reset_index()
+        #df_mortalidad_agg
+        st.bar_chart(df_mortalidad_agg, x='Causa', y='Mortalidad', y_label='Cantidad', color = 'index')
+        
         st.divider()
         
         st.subheader('Costos')
