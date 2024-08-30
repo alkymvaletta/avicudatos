@@ -206,46 +206,86 @@ with st.container(border=True):
         ### Se hace grafico st.scatter_chart donde muestre las muertes en un color y los descartes en otro
         ### donde se vea las muertes de las aves
         
-        
-        df_mortalidad = util.cosnultaQuery(f'''
+        @st.cache_data()
+        def buscarMortalidad_descarte():
+            df_mortalidad = util.cosnultaQuery(f'''
+                                                SELECT CAMADA_ID,
+                                                    FECHA,
+                                                    CANTIDAD AS "Mortalidad",
+                                                    CAUSAS_MORTALIDAD.CAUSA_POSIBLE as "Causa"
+                                                FROM PUBLIC.MORTALIDAD
+                                                JOIN PUBLIC.CAUSAS_MORTALIDAD ON CAUSAS_MORTALIDAD.ID = MORTALIDAD.CAUSA_POSIBLE_ID
+                                                WHERE CAMADA_ID = {camada_evualuar_id}
+                                                ''')
+            df_descarte = util.cosnultaQuery(f'''
                                             SELECT CAMADA_ID,
+                                                RAZON,
                                                 FECHA,
-                                                CANTIDAD AS "Mortalidad",
-                                                CAUSAS_MORTALIDAD.CAUSA_POSIBLE as "Causa"
-                                            FROM PUBLIC.MORTALIDAD
-                                            JOIN PUBLIC.CAUSAS_MORTALIDAD ON CAUSAS_MORTALIDAD.ID = MORTALIDAD.CAUSA_POSIBLE_ID
+                                                CANTIDAD AS "Descarte"
+                                            FROM PUBLIC.DESCARTE
                                             WHERE CAMADA_ID = {camada_evualuar_id}
                                             ''')
-        df_descarte = util.cosnultaQuery(f'''
-                                        SELECT CAMADA_ID,
-                                            RAZON,
-                                            FECHA,
-                                            CANTIDAD AS "Descarte"
-                                        FROM PUBLIC.DESCARTE
-                                        WHERE CAMADA_ID = {camada_evualuar_id}
-                                        ''')
+            
+            # Hacemos grafico de barras por las causas de muerte
+            df_descarte_ = df_descarte[['fecha', 'Descarte']]
+            df_mortalidad_ = df_mortalidad[['fecha', 'Mortalidad']]
+            df_mortalidad_descarte = pd.concat([df_mortalidad_, df_descarte_])
+            return df_mortalidad, df_descarte, df_mortalidad_descarte
         
-        # Hacemos grafico de barras por las causas de muerte
-        df_descarte_ = df_descarte[['fecha', 'Descarte']]
-        df_mortalidad_ = df_mortalidad[['fecha', 'Mortalidad']]
-        df_mortalidad_descarte = pd.concat([df_mortalidad_, df_descarte_])
-        st.scatter_chart(df_mortalidad_descarte, x = 'fecha', y=['Mortalidad', 'Descarte'], x_label='Fecha', y_label='Cantidad', color=["#FF0000", "#0000FF"])
+        df_mortalidad, df_descarte, df_mortalidad_descarte = buscarMortalidad_descarte()
+        
         df_mortalidad_agg = df_mortalidad.groupby('Causa')['Mortalidad'].sum().reset_index().sort_values(by='Mortalidad', ascending=False)
+        
+        st.scatter_chart(df_mortalidad_descarte, x = 'fecha', y=['Mortalidad', 'Descarte'], x_label='Fecha', y_label='Cantidad', color=["#FF0000", "#0000FF"])
         
         #Se hace la gráfica
         fig = px.bar(df_mortalidad_agg,
                      x='Causa',
                      y='Mortalidad',
-                     color = 'Mortalidad',
+                     color = 'Causa',
                      text_auto=True, #Muestra el valor de la columna
-                     color_discrete_sequence= px.colors.qualitative.G10,
+                     color_discrete_sequence= px.colors.qualitative.D3,
                      title='Causas de Mortalidad'
         )
         st.plotly_chart(fig, use_container_width=True)
         
         st.divider()
         
+        # Se hace Análisis de los Costos
         st.subheader('Costos')
+        
+        @st.cache_data()
+        def consultarCostosCamada():
+            df_costosCamada = util.cosnultaQuery(f'''
+                                                SELECT CAMADA_ID,
+                                                    TIPO_ID,
+                                                    TIPO as "Tipo",
+                                                    PROVEEDOR_ID,
+                                                    COSTO_UNITARIO,
+                                                    CANTIDAD,
+                                                    COSTO_TOTAL as "Costo Total",
+                                                    FECHA
+                                                FROM PUBLIC.COSTOS
+                                                JOIN PUBLIC.TIPOS_COSTOS ON TIPOS_COSTOS.ID = COSTOS.TIPO_ID
+                                                WHERE CAMADA_ID = {camada_evualuar_id}
+                                                ''')
+            
+            df_costoCamada_agg = df_costosCamada.groupby('Tipo')['Costo Total'].sum().reset_index().sort_values(by='Costo Total', ascending=False)
+            
+            return df_costosCamada, df_costoCamada_agg
+        
+        df_costosCamada, df_costoCamada_agg = consultarCostosCamada()
+        
+        #df_costosCamada
+        
+        fig_costos = px.bar(df_costoCamada_agg,
+                            x= 'Tipo',
+                            y= 'Costo Total',
+                            color = 'Tipo',
+                            color_discrete_sequence= px.colors.qualitative.D3,
+                            text_auto=True)
+        
+        st.plotly_chart(fig_costos, use_container_width=True)
         st.write('Se hacen graficos de barras en los que se describe los costos, por cada uno de ellos. y tambien entre los costos directos e indirecrtos')
         
 # Histórico de las camadas

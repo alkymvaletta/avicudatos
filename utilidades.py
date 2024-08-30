@@ -747,12 +747,13 @@ def agregarSacrificio(camada_id, fecha, hora,cantidad, peso = ''):
         st.write('No se pudo conectar a la base de datos')
 
 #Registra la venta de la carne
-def registrarVenta(camada_id, faena_id, presa, cantidad, precio_unitario, precio_total,fecha ,comentarios= '', cliente= '', telefono= 0):
+def registrarVenta(user_id, camada_id, faena_id, presa, cantidad, precio_unitario, precio_total, fecha, identificacion_cliente, comentarios= '', cliente= '', telefono= 0):
     conn, c = conectarDB()
     if conn is not None and c is not None:
         try:
             c.execute('''
                         INSERT INTO ventas(
+                            user_id,
                             camada_id,
                             faena_id,
                             presa,
@@ -761,11 +762,12 @@ def registrarVenta(camada_id, faena_id, presa, cantidad, precio_unitario, precio
                             precio_total,
                             comentarios,
                             cliente,
+                            identificacion_cliente,
                             telefono,
                             fecha
                             )
-                        VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    ''', (camada_id, faena_id, presa, cantidad, precio_unitario, precio_total, comentarios, cliente, telefono, fecha))
+                        VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    ''', (user_id, camada_id, faena_id, presa, cantidad, precio_unitario, precio_total, comentarios, cliente, identificacion_cliente, telefono, fecha))
             
             conn.commit()
             conn.close()

@@ -52,6 +52,7 @@ def formVentas(n):
         faena_venta = st.selectbox('Seleccione la faena a vender', options=df_faenas['diaYhora'], key=f'fa{n}')
         faena_venta_id = int(df_faenas['id'][df_faenas['diaYhora'] == faena_venta])
         cliente_venta = st.text_input('Cliente', key=f'{n+1}')
+        identificacion_venta = st.number_input('Número identificación', key=f'ideC{n+1}', step=1)
         fecha_venta = st.date_input('Fecha venta', key=f'date{n+1}')
         telefono_venta = st.number_input('Teléfono de contacto', key=f'tel{n+1}', step=1)
         
@@ -75,39 +76,43 @@ def formVentas(n):
         #Opción para agregar comentario a la venta
         if st.checkbox('Agregar un comentario', key=f'check{n+1}'):
             comentario_venta = st.text_area('Comentario:', key=f'coment{n}')
-            if len(cliente_venta) == 0 or telefono_venta==0:
+            if len(cliente_venta) == 0 or telefono_venta==0 or identificacion_venta==0:
                 st.warning('Existen campos vacios')
             
             else: 
                 #Boton para registrar la venta con comentarios
                 if st.button('Registrar ventas', key=f'b{n+5}'):
-                    resultado_venta = util.registrarVenta(camada_venta_id,
+                    resultado_venta = util.registrarVenta(user_id,
+                                                        camada_venta_id,
                                                         faena_venta_id,
                                                         presa_venta_id, 
                                                         cantidad_venta,
                                                         valor_unitario_venta,
                                                         total_venta,
                                                         fecha_venta,
+                                                        identificacion_venta,
                                                         comentario_venta, 
                                                         cliente_venta,
-                                                        telefono_venta,
+                                                        telefono_venta
                                                         )
                     if resultado_venta == True: 
                         st.success('Venta registrada con éxito', icon=':material/done_all:')
         else:
-            if len(cliente_venta) == 0 or telefono_venta==0:
+            if len(cliente_venta) == 0 or telefono_venta==0 or identificacion_venta==0:
                 st.warning('Existen campos vacios')
             
             else:
                 #Boton para registrar la venta con comentarios
                 if st.button('Registrar ventas', key=f'b{n+5}'):
-                    resultado_venta = util.registrarVenta(camada_venta_id,
+                    resultado_venta = util.registrarVenta(user_id,
+                                                        camada_venta_id,
                                                         faena_venta_id,
                                                         presa_venta_id, 
                                                         cantidad_venta,
                                                         valor_unitario_venta,
                                                         total_venta,
                                                         fecha_venta,
+                                                        identificacion_venta,
                                                         cliente=cliente_venta,
                                                         telefono=telefono_venta
                                                         )
@@ -115,6 +120,13 @@ def formVentas(n):
                         st.success('Venta registrada con éxito', icon=':material/done_all:')
 
 # Agrega tantos formularios de venta como se indique
-num_ventas = st.number_input('Ingrese la cantidad de ventas a registrar', step=1)
-for i in range(num_ventas):
-    formVentas(i)
+with st.container(border=True):
+    if st.toggle('Registrar ventas'):
+        num_ventas = st.number_input('Ingrese la cantidad de ventas a registrar', step=1)
+        for i in range(num_ventas):
+            formVentas(i)
+
+with st.container(border=True):
+    if st.toggle('Ver ventas realizadas'):
+        
+        st.write('Ver las ventas')
