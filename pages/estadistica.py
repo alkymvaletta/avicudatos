@@ -12,8 +12,6 @@ st.logo(HORIZONTAL)
 
 st.header('Avicudatos 🐔', divider='rainbow')
 
-
-
 #Si no hay usuario registrado se va a Home
 if 'usuario' not in st.session_state:
     st.switch_page('Home.py')
@@ -36,13 +34,13 @@ def datos_desempeno():
     conn, c  = util.conectarDB()
     # Extraemos los datos de DB con base al query
     c.execute('''SELECT EDAD_EN_DIAS,
-                            PESO,
-                            consumo_alimentos_acumulado,
-                            RAZAS.NOMBRE AS "Raza",
-                            SEXOS_AVES.SEXO
-                        FROM PUBLIC.OBJETIVOS_DESEMPENO
-                        LEFT JOIN PUBLIC.RAZAS ON RAZAS.ID = OBJETIVOS_DESEMPENO.RAZA_ID
-                        LEFT JOIN PUBLIC.SEXOS_AVES ON SEXOS_AVES.ID = OBJETIVOS_DESEMPENO.ID_SEXO''')
+                    PESO,
+                    consumo_alimentos_acumulado,
+                    RAZAS.NOMBRE AS "Raza",
+                    SEXOS_AVES.SEXO
+                FROM PUBLIC.OBJETIVOS_DESEMPENO
+                LEFT JOIN PUBLIC.RAZAS ON RAZAS.ID = OBJETIVOS_DESEMPENO.RAZA_ID
+                LEFT JOIN PUBLIC.SEXOS_AVES ON SEXOS_AVES.ID = OBJETIVOS_DESEMPENO.ID_SEXO''')
     resultados = c.fetchall()
     columnas = [desc[0] for desc in c.description]
     df_desempeno = pd.DataFrame(resultados, columns=columnas)
@@ -129,11 +127,14 @@ with st.container(border=True):
         
         st.subheader('Análisis zootécnicos')
         metr1, metr2, metr3, metr4 = st.columns(4)
+        
+        # Mortalidad
         with metr1:
             mortalidad = round((df_camadas_merged['Muertes'][df_camadas_merged['id'] == camada_evualuar_id] )/ (df_camadas_merged['Ingresados'][df_camadas_merged['id'] == camada_evualuar_id]),4)*100
             st.metric('Mortalidad', value= f'{float(mortalidad)} %')
+        
+        #Conversión Alimenticia - CA = Consumo Alimento Promedio / Peso Prom
         with metr2: 
-            #Conversión Alimenticia - CA = Consumo Alimento Promedio / Peso Prom
             df_consumo_alimento = util.cosnultaQuery(f'''SELECT SUM(PESO) AS TOTAL_ALIMENTO
                                                         FROM PUBLIC.ALIMENTO
                                                         WHERE (CAMADA_ID = {camada_evualuar_id})
@@ -156,10 +157,15 @@ with st.container(border=True):
             
             st.metric('Conv. Alimenticia - CA', CA, '-1.2 %')
         
+        # Eficiencia Alimenticia - EA = Peso Prom / Conversión Alimenticia 
         with metr3:
-            st.metric('Ef. Alimenticia - EA', '45 %', '4.2 %')
+            EA = round(peso_promedio / CA, 4)
+            st.metric('Ef. Alimenticia - EA', EA, '4.2 %')
+        
+        # Indice de Productividad - IP = Eficiencia Alimenticia / Conversión Alimenticia
         with metr4:
-            st.metric('Indice Productividad - IP', '38 %', '09 %')
+            IP = round(EA / CA, 4)
+            st.metric('Indice Productividad - IP', IP, '09 %')
         st.divider()
         
         st.subheader('Análisis económico')
@@ -236,23 +242,30 @@ with st.container(border=True):
         
         df_mortalidad_agg = df_mortalidad.groupby('Causa')['Mortalidad'].sum().reset_index().sort_values(by='Mortalidad', ascending=False)
         
-        st.scatter_chart(df_mortalidad_descarte, x = 'fecha', y=['Mortalidad', 'Descarte'], x_label='Fecha', y_label='Cantidad', color=["#FF0000", "#0000FF"])
+        fig_mortalidad_descarte = px.scatter(df_mortalidad_descarte, 
+                                            x = 'fecha', 
+                                            y=['Mortalidad', 'Descarte'],
+                                            )
+        
+        st.plotly_chart(fig_mortalidad_descarte, use_container_width=True)
+        
+        #st.scatter_chart(df_mortalidad_descarte, x = 'fecha', y=['Mortalidad', 'Descarte'], x_label='Fecha', y_label='Cantidad', color=["#FF0000", "#0000FF"])
         
         #Se hace la gráfica
         fig = px.bar(df_mortalidad_agg,
-                     x='Causa',
-                     y='Mortalidad',
-                     color = 'Causa',
-                     text_auto=True, #Muestra el valor de la columna
-                     color_discrete_sequence= px.colors.qualitative.D3,
-                     title='Causas de Mortalidad'
-        )
+                        x='Causa',
+                        y='Mortalidad',
+                        color = 'Causa',
+                        text_auto=True, #Muestra el valor de la columna
+                        color_discrete_sequence= px.colors.qualitative.D3,
+                        title='Causas de Mortalidad'
+                    )
         st.plotly_chart(fig, use_container_width=True)
         
         st.divider()
         
         # Se hace Análisis de los Costos
-        st.subheader('Costos')
+        st.subheader('Análisis de Costos')
         
         @st.cache_data()
         def consultarCostosCamada():
