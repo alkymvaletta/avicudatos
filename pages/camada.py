@@ -134,6 +134,11 @@ with st.container(border=True):
             with tab2:
                 st.info('Aún no haz registrado camadas que puedas eliminar', icon=':material/notifications:')
 
+def verificarProveedor(df):
+    if df.shape[0] == 0:
+        st.info('Aún no haz registrado proveedores. Registralo en **Proveedores** para continuar', icon=':material/notifications:')
+        return st.stop()
+
 ### Se agregan la gestión de consumibles
 if df_camadas.shape[0] > 0:
     st.subheader('Registra la operación de la camada')
@@ -298,14 +303,17 @@ if df_camadas.shape[0] > 0:
                 if respuesta_pesaje == True:
                     st.success('Se registró los datos de pesaje exitosamente', icon=':material/done_all:')
 
+
+
     ## Se agrega la gestión de los costos relacionados con la camada
     with st.container(border=True):
         if st.toggle('**Costos**'):
             df_proveedores = util.consultarProveedores(user_id)
             fecha_costo = st.date_input('Fecha de costo', key='fechaCosto')
             df_tipo_costo = util.cosnultaQuery('SELECT * FROM public.tipos_costos')
-            tipo_costo = st.selectbox('Seleccione el tipo de costo', options=df_tipo_costo['tipo'])
+            tipo_costo = st.selectbox('Seleccione el tipo de costo', options=df_tipo_costo['tipo'].sort_values())
             tipo_costo_id = int(df_tipo_costo['id'][df_tipo_costo['tipo'] == tipo_costo].values[0])
+            verificarProveedor(df_proveedores)
             proveedor_costo = st.selectbox('Seleccione el proveedor del servicio o producto', options=df_proveedores['Nombre'])
             proveedor_costo_id = int(df_proveedores['id'][df_proveedores['Nombre'] == proveedor_costo].values[0])
             valor_unitario_costo = st.number_input('Ingrese el valor unitario', min_value=0, step=1)
