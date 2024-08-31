@@ -41,7 +41,11 @@ df_camadas_merged = pd.merge(df_camadas, df_galpones, how='left', left_on='galpo
 df_camadas_merged = df_camadas_merged.rename(columns={'cantidad':'Ingresados', 'fecha_inicio':'Fecha ingreso', 'fecha_estimada_sacrificio':'Sacrificio estimado', 'muertes':'Muertes', 'descartes':'Descartes', 'faenados':'Sacrificados'})
 df_camadas_merged['todo'] = df_camadas_merged['Granja'].map(str) + ', '+ df_camadas_merged['Galpón']
 
-
+def verificarFaena(df):
+    if df.shape[0] == 0:
+        st.info('Aún no haz registrado sacrificios en la camada seleccionada', icon=':material/notifications:')
+        return st.stop()
+    
 def formVentas(n):      
     with st.container(border=True):
         
@@ -49,8 +53,9 @@ def formVentas(n):
         camada_venta = st.selectbox('Seleccione la camada a vender', options=df_camadas_merged['todo'], key=f'ca{n}')
         camada_venta_id = int(df_camadas_merged['id'][df_camadas_merged['todo']==camada_venta][0])
         df_faenas = util.cosnultaQuery(f'SELECT * FROM PUBLIC.FAENA WHERE CAMADA_ID = {camada_venta_id}')
+        verificarFaena(df_faenas)
         df_faenas['diaYhora'] = df_faenas['fecha'].map(str) + ', ' + df_faenas['hora'].map(str)
-        faena_venta = st.selectbox('Seleccione la faena a vender', options=df_faenas['diaYhora'], key=f'fa{n}')
+        faena_venta = st.selectbox('Seleccione el sacrificio del que desea vender', options=df_faenas['diaYhora'], key=f'fa{n}')
         faena_venta_id = int(df_faenas['id'][df_faenas['diaYhora'] == faena_venta])
         cliente_venta = st.text_input('Cliente', key=f'{n+1}')
         identificacion_venta = st.number_input('Número identificación', key=f'ideC{n+1}', step=1)
@@ -123,7 +128,7 @@ def formVentas(n):
 # Agrega tantos formularios de venta como se indique
 with st.container(border=True):
     if st.toggle('Registrar ventas'):
-        num_ventas = st.number_input('Ingrese la cantidad de ventas a registrar', step=1)
+        num_ventas = st.number_input('Ingrese la cantidad de ventas a registrar', step=1, min_value=1)
         for i in range(num_ventas):
             formVentas(i)
 
@@ -161,25 +166,29 @@ with st.container(border=True):
         df_ventas, tipos_presa, val_min, val_max = consultarVentas()
         #fecha_venta = df_ventas['Fecha Venta'].min()
         
-        #Aplica filtros a las ventas
-        col_fecha, col_presa, col_valor = st.columns(3)
-        
-        with col_fecha:
-            cliente = st.text_input('Buscar por cliente', )
-        
-        with col_presa:
-            presa = st.multiselect('Seleccione presas', tipos_presa)
-        
-        with col_valor:
-            rango_venta = st.slider('Rango de venta',val_min, val_max, (val_min, val_max))
-        
-        # Se aplica los filtros aplicados a las ventas
-        df_ventas_filtered = df_ventas[
-            (df_ventas['Cliente'].str.contains(cliente, case=False)) &
-            (df_ventas['Tipo Presa'].isin(presa)) & 
-            (df_ventas['Total']>= rango_venta[0]) &
-            (df_ventas['Total']<= rango_venta[1])]
-        
-        #Muestra los las ventas que cumplen con las condiciones
-        st.dataframe(df_ventas_filtered, column_order=['Fecha Venta',"N. Identificación", 'Cliente','Tipo Presa', 'Cantidad', 'Vlr. Unitario', 'Total'], hide_index=True, use_container_width=True)
-        st.write('Ver las ventas')
+        #Se aplica mensaje si aún no hay ventas.
+        if df_ventas.shape[0] == 0:
+            st.info('Aún no haz registrado ventas de tus camadas', icon=':material/notifications:')
+        else:
+            #Aplica filtros a las ventas
+            col_fecha, col_presa, col_valor = st.columns(3)
+            
+            with col_fecha:
+                cliente = st.text_input('Buscar por cliente', )
+            
+            with col_presa:
+                presa = st.multiselect('Seleccione presas', tipos_presa)
+            
+            with col_valor:
+                rango_venta = st.slider('Rango de venta',val_min, val_max, (val_min, val_max))
+            
+            # Se aplica los filtros aplicados a las ventas
+            df_ventas_filtered = df_ventas[
+                (df_ventas['Cliente'].str.contains(cliente, case=False)) &
+                (df_ventas['Tipo Presa'].isin(presa)) & 
+                (df_ventas['Total']>= rango_venta[0]) &
+                (df_ventas['Total']<= rango_venta[1])]
+            
+            #Muestra los las ventas que cumplen con las condiciones
+            st.dataframe(df_ventas_filtered, column_order=['Fecha Venta',"N. Identificación", 'Cliente','Tipo Presa', 'Cantidad', 'Vlr. Unitario', 'Total'], hide_index=True, use_container_width=True)
+            st.write('Ver las ventas')
