@@ -2,6 +2,7 @@ import streamlit as st
 import utilidades as util
 import time
 import pandas as pd
+from datetime import datetime
 from psycopg2 import sql
 from PIL import Image
 
@@ -129,4 +130,56 @@ with st.container(border=True):
 with st.container(border=True):
     if st.toggle('Ver ventas realizadas'):
         
+        @st.cache_data(show_spinner=True)
+        def consultarVentas():
+            df_ventas = util.cosnultaQuery(f'''
+                                        SELECT IDENTIFICACION_CLIENTE AS "N. Identificación",
+                                            VENTAS.USER_ID,
+                                            CAMADA_ID,
+                                            FECHA AS "Fecha Venta",
+                                            CAMADA.FECHA_INICIO AS "Fecha Inicio Camada",
+                                            GRANJA_ID,
+                                            FAENA_ID,
+                                            NOMBRE AS "Tipo Presa",
+                                            VENTAS.CANTIDAD as "Cantidad",
+                                            VENTAS.PRECIO_UNITARIO as "Vlr. Unitario",
+                                            PRECIO_TOTAL as "Total",
+                                            COMENTARIOS,
+                                            CLIENTE AS "Cliente",
+                                            TELEFONO
+                                        FROM PUBLIC.VENTAS
+                                        JOIN PUBLIC.CAMADA ON CAMADA.ID = VENTAS.CAMADA_ID
+                                        JOIN PUBLIC.TIPO_PRESAS ON TIPO_PRESAS.ID = VENTAS.PRESA
+                                        WHERE VENTAS.USER_ID = {user_id}
+                                        ORDER BY FECHA ASC
+                                        ''')
+            tipos_presa = df_ventas['Tipo Presa'].unique()
+            val_min = df_ventas['Total'].min()
+            val_max = df_ventas['Total'].max()
+            return df_ventas, tipos_presa, val_min, val_max
+        
+        df_ventas, tipos_presa, val_min, val_max = consultarVentas()
+        #fecha_venta = df_ventas['Fecha Venta'].min()
+        
+        #Aplica filtros a las ventas
+        col_fecha, col_presa, col_valor = st.columns(3)
+        
+        with col_fecha:
+            cliente = st.text_input('Buscar por cliente', )
+        
+        with col_presa:
+            presa = st.multiselect('Seleccione presas', tipos_presa)
+        
+        with col_valor:
+            rango_venta = st.slider('Rango de venta',val_min, val_max, (val_min, val_max))
+        
+        # Se aplica los filtros aplicados a las ventas
+        df_ventas_filtered = df_ventas[
+            (df_ventas['Cliente'].str.contains(cliente, case=False)) &
+            (df_ventas['Tipo Presa'].isin(presa)) & 
+            (df_ventas['Total']>= rango_venta[0]) &
+            (df_ventas['Total']<= rango_venta[1])]
+        
+        #Muestra los las ventas que cumplen con las condiciones
+        st.dataframe(df_ventas_filtered, column_order=['Fecha Venta',"N. Identificación", 'Cliente','Tipo Presa', 'Cantidad', 'Vlr. Unitario', 'Total'], hide_index=True, use_container_width=True)
         st.write('Ver las ventas')

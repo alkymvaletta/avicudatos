@@ -282,7 +282,7 @@ if df_camadas.shape[0] > 0:
     ## Se agrega la gestión de los pesajes de los pollos de la camada
     with st.container(border=True):
         if st.toggle('**Pesajes**'):
-            fecha_pesaje = st.date_input('Fecha de la medición', key='fechaPesaje')
+            fecha_pesaje = st.date_input('Fecha del pesaje', key='fechaPesaje')
             tamano_muestra_pesaje = st.number_input('Indique la cantidad de pollos a pesar', min_value=1, step=1)
             pesos = []
             for i in range(tamano_muestra_pesaje):
