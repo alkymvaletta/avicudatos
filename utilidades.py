@@ -36,6 +36,7 @@ def generarMenu(usuario = None):
             # Boton para cerrar sesión
             if btnSalir: 
                 st.session_state.clear() # Se borra el session_state
+                st.cache_data.clear()
                 st.switch_page('Home.py')
                 st.rerun()
 

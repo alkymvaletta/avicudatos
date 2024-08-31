@@ -146,26 +146,37 @@ with st.container(border=True):
                                                                     FROM PUBLIC.PROMEDIO_MEDICIONES_PESOS
                                                                     WHERE CAMADA_ID = {camada_evualuar_id})''')
             
-            #Peso promedio de las aves
-            peso_promedio = float(df_promedio_pesos.values[0])/1000
-            
-            # Consumo promedio de aves ingresadas
-            consumo_promedio = float(round(df_consumo_alimento['total_alimento'].values[0]/df_camadas_merged['Ingresados'].values[0], 4))
-            
-            # Calculo de la conversión alimenticia
-            CA = round(consumo_promedio / peso_promedio, 4)
-            
-            st.metric('Conv. Alimenticia - CA', CA, '-1.2 %')
+            if (df_consumo_alimento.shape[0] == 0) or (df_promedio_pesos.shape[0] == 0):
+                st.metric('Conv. Alimenticia - CA', 'NaN')
+                CA = None
+            else:
+                #Peso promedio de las aves
+                peso_promedio = float(df_promedio_pesos.values[0])/1000
+                
+                # Consumo promedio de aves ingresadas
+                consumo_promedio = float(round(df_consumo_alimento['total_alimento'].values[0]/df_camadas_merged['Ingresados'].values[0], 4))
+                
+                # Calculo de la conversión alimenticia
+                CA = round(consumo_promedio / peso_promedio, 4)
+                
+                st.metric('Conv. Alimenticia - CA', CA, '-1.2 %')
         
         # Eficiencia Alimenticia - EA = Peso Prom / Conversión Alimenticia 
         with metr3:
-            EA = round(peso_promedio / CA, 4)
-            st.metric('Ef. Alimenticia - EA', EA, '4.2 %')
+            if (CA == None) or (df_promedio_pesos.shape[0] == 0) :
+                st.metric('Ef. Alimenticia - EA', 'NaN')
+                EA = None
+            else:
+                EA = round(peso_promedio / CA, 4)
+                st.metric('Ef. Alimenticia - EA', EA, '4.2 %')
         
         # Indice de Productividad - IP = Eficiencia Alimenticia / Conversión Alimenticia
         with metr4:
-            IP = round(EA / CA, 4)
-            st.metric('Indice Productividad - IP', IP, '09 %')
+            if (CA == None) or (EA == None):
+                st.metric('Indice Productividad - IP', 'NaN')
+            else:
+                IP = round(EA / CA, 4)
+                st.metric('Indice Productividad - IP', IP, '09 %')
         st.divider()
         
         st.subheader('Análisis económico')
@@ -173,23 +184,31 @@ with st.container(border=True):
         
         # Total costos
         with metr5:
-            costo_total = util.cosnultaQuery(f'''SELECT SUM(COSTO_TOTAL)
+            df_costo_total = util.cosnultaQuery(f'''SELECT SUM(COSTO_TOTAL)
                                         FROM PUBLIC.COSTOS
                                         WHERE CAMADA_ID = {camada_evualuar_id}
                                     ''')
-            costo_total = int(costo_total.values[0])
-            st.metric('Total costos', value = f'${format(round(costo_total/1000000, 3), ",")} M')
+            if df_costo_total.values[0] == None:
+                st.metric('Total costos', value = 0)
+                costo_total = 0
+            else:
+                costo_total = int(df_costo_total.values[0])
+                st.metric('Total costos', value = f'${format(round(costo_total/1000000, 3), ",")} M')
         
         # total ventas
         with metr6:
             #valor_venta= 7234650
-            valor_venta = util.cosnultaQuery(f'''
+            df_valor_venta = util.cosnultaQuery(f'''
                                             SELECT SUM(PRECIO_TOTAL) AS TOTAL
                                             FROM PUBLIC.VENTAS
                                             WHERE CAMADA_ID = {camada_evualuar_id}
                                             ''')
-            valor_venta = int(valor_venta.values[0])
-            st.metric('Total ventas',value= f'${format(round(valor_venta/1000000, 3) , ",")} M')
+            if df_valor_venta.values[0] == None:
+                st.metric('Total ventas',value= 0)
+                valor_venta = 0
+            else:
+                valor_venta = int(df_valor_venta.values[0])
+                st.metric('Total ventas',value= f'${format(round(valor_venta/1000000, 3) , ",")} M')
         
         #Utilidades
         with metr7:
@@ -240,27 +259,32 @@ with st.container(border=True):
         
         df_mortalidad, df_descarte, df_mortalidad_descarte = buscarMortalidad_descarte()
         
-        df_mortalidad_agg = df_mortalidad.groupby('Causa')['Mortalidad'].sum().reset_index().sort_values(by='Mortalidad', ascending=False)
+        # Se aplica mensaje en caso de que no se haya presentado mortalidad o descarte
+        if (df_mortalidad.shape[0] == 0 ) and (df_descarte.shape[0] == 0):
+            st.info('Aún no haz registrado mortalidad o descartes en tu camada')
         
-        fig_mortalidad_descarte = px.scatter(df_mortalidad_descarte, 
-                                            x = 'fecha', 
-                                            y=['Mortalidad', 'Descarte'],
-                                            )
-        
-        st.plotly_chart(fig_mortalidad_descarte, use_container_width=True)
-        
-        #st.scatter_chart(df_mortalidad_descarte, x = 'fecha', y=['Mortalidad', 'Descarte'], x_label='Fecha', y_label='Cantidad', color=["#FF0000", "#0000FF"])
-        
-        #Se hace la gráfica
-        fig = px.bar(df_mortalidad_agg,
-                        x='Causa',
-                        y='Mortalidad',
-                        color = 'Causa',
-                        text_auto=True, #Muestra el valor de la columna
-                        color_discrete_sequence= px.colors.qualitative.D3,
-                        title='Causas de Mortalidad'
-                    )
-        st.plotly_chart(fig, use_container_width=True)
+        else:
+            df_mortalidad_agg = df_mortalidad.groupby('Causa')['Mortalidad'].sum().reset_index().sort_values(by='Mortalidad', ascending=False)
+            
+            fig_mortalidad_descarte = px.scatter(df_mortalidad_descarte, 
+                                                x = 'fecha', 
+                                                y=['Mortalidad', 'Descarte'],
+                                                )
+            
+            st.plotly_chart(fig_mortalidad_descarte, use_container_width=True)
+            
+            #st.scatter_chart(df_mortalidad_descarte, x = 'fecha', y=['Mortalidad', 'Descarte'], x_label='Fecha', y_label='Cantidad', color=["#FF0000", "#0000FF"])
+            
+            #Se hace la gráfica
+            fig = px.bar(df_mortalidad_agg,
+                            x='Causa',
+                            y='Mortalidad',
+                            color = 'Causa',
+                            text_auto=True, #Muestra el valor de la columna
+                            color_discrete_sequence= px.colors.qualitative.D3,
+                            title='Causas de Mortalidad'
+                        )
+            st.plotly_chart(fig, use_container_width=True)
         
         st.divider()
         
@@ -289,17 +313,19 @@ with st.container(border=True):
         
         df_costosCamada, df_costoCamada_agg = consultarCostosCamada()
         
-        #df_costosCamada
+        # Se aplica mensaje si NO hay costos registrados
+        if df_costosCamada.shape[0] == 0:
+            st.info('Aún no haz registrado costos asociados a tu camada', icon=':material/notifications:')
         
-        fig_costos = px.bar(df_costoCamada_agg,
-                            x= 'Tipo',
-                            y= 'Costo Total',
-                            color = 'Tipo',
-                            color_discrete_sequence= px.colors.qualitative.D3,
-                            text_auto=True)
-        
-        st.plotly_chart(fig_costos, use_container_width=True)
-        st.write('Se hacen graficos de barras en los que se describe los costos, por cada uno de ellos. y tambien entre los costos directos e indirecrtos')
+        else:
+            fig_costos = px.bar(df_costoCamada_agg,
+                                x= 'Tipo',
+                                y= 'Costo Total',
+                                color = 'Tipo',
+                                color_discrete_sequence= px.colors.qualitative.D3,
+                                text_auto=True)
+            
+            st.plotly_chart(fig_costos, use_container_width=True)
         
 # Histórico de las camadas
 with st.container(border=True):
