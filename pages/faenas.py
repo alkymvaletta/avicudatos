@@ -54,20 +54,20 @@ with st.container():
     else:
         st.write(f'Cuentas con **{df_camadas.shape[0]}** camadas activas y las puedes sacrificar ')
         st.dataframe(df_camadas_merged[['Granja','Galpón','Fecha ingreso','Sacrificio estimado','Dias', 'Disponibles', 'Sacrificados']], hide_index=True, use_container_width=True)
-
-if st.toggle('Sacrificar aves'):
-    camada_sacrificio = st.selectbox('Selecciona la camada a sacrificar', options=df_camadas_merged['Galpón'])
-    camada_sacrificio_id = int(df_camadas_merged['id'][df_camadas_merged['Galpón'] == camada_sacrificio][0])
-    fecha_sacrificio = st.date_input('Ingresa fecha de sacrifio')
-    hora_sacrificio = st.time_input('Ingrese hora de sacrificio')
-    cant_sacrificio = st.number_input('Ingresa la cantidad de aves sacrificadas', value=None, step=1, min_value=1, key='cantSacrificio')
-    peso_sacrificio = st.number_input('Ingresa la cantidad de Kilos producidos', value=None, step=0.01, min_value=0.01, key='pesoSacrificio')
-    #aceptar_sinPeso = st.checkbox('Registar aves sacrificadas sin peso')
-    if cant_sacrificio != None:
-        
-        if st.button('Registrar la Sacrificio', key='btnSacrificio'):
-            resultado_sacrificio = util.agregarSacrificio(camada_sacrificio_id, fecha_sacrificio, hora_sacrificio, cant_sacrificio, peso_sacrificio)
-            if resultado_sacrificio == True:
-                st.success(f'Se registró el sacrificio de {cant_sacrificio} aves exitosamente', icon=':material/done_all:')
-                st.rerun()
+with st.container(border=True):
+    if st.toggle('Sacrificar aves'):
+        camada_sacrificio = st.selectbox('Selecciona la camada a sacrificar', options=df_camadas_merged['Galpón'])
+        camada_sacrificio_id = int(df_camadas_merged['id'][df_camadas_merged['Galpón'] == camada_sacrificio][0])
+        fecha_sacrificio = st.date_input('Ingresa fecha de sacrifio')
+        hora_sacrificio = st.time_input('Ingrese hora de sacrificio')
+        cant_sacrificio = st.number_input('Ingresa la cantidad de aves sacrificadas', value=None, step=1, min_value=1, key='cantSacrificio')
+        peso_sacrificio = st.number_input('Ingresa la cantidad de Kilos producidos', value=None, step=0.01, min_value=0.01, key='pesoSacrificio')
+        #aceptar_sinPeso = st.checkbox('Registar aves sacrificadas sin peso')
+        if cant_sacrificio != None:
+            
+            if st.button('Registrar la Sacrificio', key='btnSacrificio'):
+                resultado_sacrificio = util.agregarSacrificio(camada_sacrificio_id, fecha_sacrificio, hora_sacrificio, cant_sacrificio, peso_sacrificio)
+                if resultado_sacrificio == True:
+                    st.success(f'Se registró el sacrificio de {cant_sacrificio} aves exitosamente', icon=':material/done_all:')
+                    st.rerun()
     

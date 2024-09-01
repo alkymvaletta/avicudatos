@@ -74,7 +74,10 @@ with st.container(border=True):
         ## Creamos filtro para seleccionar Sexo
         with col3:
             sexo = st.selectbox('Seleccione el sexo', df_desempeno['sexo'].unique())
-
+        
+        if st.checkbox('Comparar camada'):
+            comparar_camada = st.selectbox('Seleccione la camada a comparar', options=['Camada1', 'Camada2'])
+        
         # Se crea df de acuerdo a los filtros seleccionados
         df_filtrado = df_desempeno[
                     ((df_desempeno['Edad en días']).isin(range(0, dias + 1))) &

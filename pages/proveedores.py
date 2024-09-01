@@ -1,6 +1,6 @@
 import streamlit as st
 import utilidades as util
-import pandas as pd
+#import pandas as pd
 from psycopg2 import sql
 
 #Configuración de Pagina

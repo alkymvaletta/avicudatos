@@ -1,7 +1,7 @@
 import streamlit as st
-import streamlit_authenticator as stauth
+#import streamlit_authenticator as stauth
 import utilidades as util
-from streamlit_cookies_controller import CookieController
+#from streamlit_cookies_controller import CookieController
 
 
 st.set_page_config(page_title='Avicudatos - Inicio', page_icon='🐔')   
@@ -19,7 +19,7 @@ if 'usuario' in st.session_state:
     
     util.generarMenu(usuario)
     
-    controller = CookieController()
+    #controller = CookieController()
     
     st.subheader(f'Analizando el rendimiento de las aves de :red[{usuario}]')
 

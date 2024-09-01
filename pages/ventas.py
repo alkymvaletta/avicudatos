@@ -1,6 +1,6 @@
 import streamlit as st
 import utilidades as util
-import time
+#import time
 import pandas as pd
 from datetime import datetime
 from psycopg2 import sql
@@ -191,4 +191,7 @@ with st.container(border=True):
             
             #Muestra los las ventas que cumplen con las condiciones
             st.dataframe(df_ventas_filtered, column_order=['Fecha Venta',"N. Identificación", 'Cliente','Tipo Presa', 'Cantidad', 'Vlr. Unitario', 'Total'], hide_index=True, use_container_width=True)
-            st.write('Ver las ventas')
+            
+            # df_ventas_filtered_agg = df_ventas_filtered.groupby('Fecha Venta')['Total'].sum().reset_index()
+            # #df_ventas_filtered_agg
+            # st.line_chart(df_ventas_filtered_agg, x='Fecha Venta', y='Total')

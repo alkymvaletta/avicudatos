@@ -209,11 +209,11 @@ if df_camadas.shape[0] > 0:
             st.write('Registra el suministro de medicamentos a tus aves')
             fecha_medicacion = st.date_input('Seleccione la fecha de suministro')
             df_tipos_mediacion = util.cosnultaQuery('SELECT * FROM PUBLIC.TIPO_MEDICAMENTO')
-            tipo_medicamento = st.selectbox('Seleccione el tipo de medicamento suministrado', options=df_tipos_mediacion['tipo'])
+            tipo_medicamento = st.selectbox('Seleccione el tipo de medicamento suministrado', options=df_tipos_mediacion['tipo'].sort_values())
             tipo_medicamento_id = int(df_tipos_mediacion['id'][df_tipos_mediacion['tipo'] == tipo_medicamento].values[0])
             df_medicamentos = util.cosnultaQuery('SELECT * FROM PUBLIC.MEDICAMENTOS')
             df_medicamentos_aplicar = df_medicamentos[df_medicamentos['tipo'] == tipo_medicamento_id]
-            medicamento_aplicado = st.selectbox('Seleccione el medicamento suministrado', options=df_medicamentos_aplicar['nombre'])
+            medicamento_aplicado = st.selectbox('Seleccione el medicamento suministrado', options=df_medicamentos_aplicar['nombre'].sort_values())
             medicamento_aplicado_id = int(df_medicamentos_aplicar['id'][df_medicamentos_aplicar['nombre'] == medicamento_aplicado])
             dosis = int(df_medicamentos_aplicar['cant_dosis'][df_medicamentos_aplicar['nombre'] == medicamento_aplicado])
             dosis = range(1,dosis+1)
