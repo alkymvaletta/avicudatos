@@ -35,7 +35,10 @@ def datos_desempeno():
     # Extraemos los datos de DB con base al query
     c.execute('''SELECT EDAD_EN_DIAS,
                     PESO,
-                    consumo_alimentos_acumulado,
+                    CONSUMO_ALIMENTOS_ACUMULADO,
+                    GANANCIA,
+                    CONVERSION_ALIMENTICIA_ACUMULADA AS "CA",
+                    raza_id,
                     RAZAS.NOMBRE AS "Raza",
                     SEXOS_AVES.SEXO
                 FROM PUBLIC.OBJETIVOS_DESEMPENO
@@ -125,6 +128,24 @@ with st.container(border=True):
         
         camada_evualuar = st.selectbox('Selecciona la camada', options=df_camadas_merged['galponEingreso'])
         camada_evualuar_id = int(df_camadas_merged['id'][df_camadas_merged['galponEingreso'] == camada_evualuar])
+        
+        # Datos de camada de comparación
+        camada_ingreso = df_camadas_merged['Fecha ingreso'].iloc[0]
+        camada_granja = df_camadas_merged['Granja'].iloc[0]
+        camada_galpon = df_camadas_merged['Galpón'].iloc[0]
+        camada_capacidad = df_camadas_merged['Capacidad'].iloc[0]
+        camada_ingresados = df_camadas_merged['Ingresados'].iloc[0]
+        camada_dias = df_camadas_merged['Dias'].iloc[0]
+        camada_muerte = df_camadas_merged['Muertes'].iloc[0]
+        camada_descarte = df_camadas_merged['Descartes'].iloc[0]
+        camada_sacrificio = df_camadas_merged['Sacrificados'].iloc[0]
+        camada_raza = df_camadas_merged['raza'].iloc[0]
+        
+        st.write(f'''La camada se ingresó el **{camada_ingreso}** encuentra en la granja **{camada_granja}** el el galpón **{camada_galpon}** 
+                 que tiene una capacidad de **{camada_capacidad}** aves. Se ingresaron un total de **{camada_ingresados}** y llevan 
+                **{camada_dias}** dias, en los cuales han muerto **{camada_muerte}** y se han descartado **{camada_descarte}** aves. 
+                Hasta la fecha se han sacrificado **{camada_sacrificio}**''')
+        
         # Se establecen columnas para las métricas.
         st.divider()
         
@@ -149,6 +170,11 @@ with st.container(border=True):
                                                                     FROM PUBLIC.PROMEDIO_MEDICIONES_PESOS
                                                                     WHERE CAMADA_ID = {camada_evualuar_id})''')
             
+            #Traemos la referencia de CA de acuerdo a los días transcurridos
+            CA_referencia = df_desempeno['CA'][(df_desempeno['Edad en días'] == camada_dias) & 
+                                                (df_desempeno['raza_id'] == camada_raza) &
+                                                (df_desempeno['sexo'] == 'mixto')].iloc[0]
+            
             if (df_consumo_alimento.shape[0] == 0) or (df_promedio_pesos.shape[0] == 0):
                 st.metric('Conv. Alimenticia - CA', 'NaN')
                 CA = None
@@ -161,8 +187,8 @@ with st.container(border=True):
                 
                 # Calculo de la conversión alimenticia
                 CA = round(consumo_promedio / peso_promedio, 4)
-                
-                st.metric('Conv. Alimenticia - CA', CA, '-1.2 %')
+                CA_diferencia = round(CA-CA_referencia, 4)
+                st.metric('Conv. Alimenticia - CA', CA, CA_diferencia)
         
         # Eficiencia Alimenticia - EA = Peso Prom / Conversión Alimenticia 
         with metr3:
@@ -171,7 +197,7 @@ with st.container(border=True):
                 EA = None
             else:
                 EA = round(peso_promedio / CA, 4)
-                st.metric('Ef. Alimenticia - EA', EA, '4.2 %')
+                st.metric('Ef. Alimenticia - EA', EA)
         
         # Indice de Productividad - IP = Eficiencia Alimenticia / Conversión Alimenticia
         with metr4:
@@ -179,7 +205,7 @@ with st.container(border=True):
                 st.metric('Indice Productividad - IP', 'NaN')
             else:
                 IP = round(EA / CA, 4)
-                st.metric('Indice Productividad - IP', IP, '09 %')
+                st.metric('Indice Productividad - IP', IP)
         st.divider()
         
         st.subheader('Análisis económico')
