@@ -2,7 +2,9 @@ import streamlit as st
 import utilidades as util
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 from datetime import datetime
+
 # Se agrega logo
 HORIZONTAL = 'src\images\horizontal_logo.png'
 
@@ -78,40 +80,42 @@ with st.container(border=True):
         with col3:
             sexo = st.selectbox('Seleccione el sexo', df_desempeno['sexo'].unique())
         
-        if st.checkbox('Comparar camada'):
-            comparar_camada = st.selectbox('Seleccione la camada a comparar', options=['Camada1', 'Camada2'])
-        
         # Se crea df de acuerdo a los filtros seleccionados
         df_filtrado = df_desempeno[
                     ((df_desempeno['Edad en días']).isin(range(0, dias + 1))) &
                     (df_desempeno['Raza'] == raza) &
                     (df_desempeno['sexo'] == sexo)
                     ]
-
-        # Graficamos el consumo de alimentos acumulado
-        with st.container(border=True):
-            graph1, graph2 = st.columns(2)
-            with graph1:
-                st.write('**Consumo de alimento acumulado**')
-                st.line_chart(df_filtrado,
-                            color=(1,204,17),
-                            x= 'Edad en días', 
-                            y='Consumo alimento acumulado', 
-                            x_label='Dias', 
-                            y_label='Consumo alimento acumulado [g]')
-
-        # Graficamos el peso
-            with graph2:
-                st.write('**Ganancia de peso acumulada**')
-                st.line_chart(df_filtrado,
-                            color=(246,64,19), 
-                            x= 'Edad en días', 
-                            y='Peso',
-                            x_label='Dias',
-                            y_label='Peso [g]')
-
+        
+        ### Gráfica de consumo de alimento y el peso
+        
+        fig_consumo_peso = go.Figure()
+        
+        #Se agrega trazo de los datps de referencia Consumo alimento acumulado
+        fig_consumo_peso.add_trace(go.Line(x=df_filtrado['Edad en días'], 
+                                        y=df_filtrado['Consumo alimento acumulado'],
+                                        name = 'Alimento',
+                                        line =(dict(color='firebrick', width=2))))
+        
+        #Se agrega trazo de los datps de referencia de Peso
+        fig_consumo_peso.add_trace(go.Line(x=df_filtrado['Edad en días'], 
+                                        y=df_filtrado['Peso'],
+                                        name = 'Peso',
+                                        line =(dict(color='green', width=2, dash = 'dot'))))
+        
+        fig_consumo_peso.update_layout(title= 'Evolución Consumo de Alimento y Ganancia de Peso Acumulado',
+                                    xaxis_title='Dias del ave',
+                                    yaxis_title= 'Gramos')
+        
+        st.plotly_chart(fig_consumo_peso)
+        #st.plotly_chart(fig_cosumo)
+        
         if st.checkbox('Tabla datos de referencia'):
             st.dataframe(df_filtrado, hide_index=True, use_container_width=True)
+
+with st.container(border=True):
+    if st.toggle('Comparación de desempeño'):
+        st.write('Sale la comparación')
 
 # Análisis de las camadas
 with st.container(border=True):
@@ -232,6 +236,7 @@ with st.container(border=True):
                                             FROM PUBLIC.VENTAS
                                             WHERE CAMADA_ID = {camada_evualuar_id}
                                             ''')
+            
             if df_valor_venta.values[0] == None:
                 st.metric('Total ventas',value= 0)
                 valor_venta = 0
@@ -260,7 +265,7 @@ with st.container(border=True):
         ### Se hace grafico st.scatter_chart donde muestre las muertes en un color y los descartes en otro
         ### donde se vea las muertes de las aves
         
-        @st.cache_data()
+        @st.cache_data(ttl=180)
         def buscarMortalidad_descarte():
             df_mortalidad = util.cosnultaQuery(f'''
                                                 SELECT CAMADA_ID,
@@ -320,7 +325,7 @@ with st.container(border=True):
         # Se hace Análisis de los Costos
         st.subheader('Análisis de Costos')
         
-        @st.cache_data()
+        @st.cache_data(ttl=180)
         def consultarCostosCamada():
             df_costosCamada = util.cosnultaQuery(f'''
                                                 SELECT CAMADA_ID,

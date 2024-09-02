@@ -69,7 +69,7 @@ def formVentas(n):
             presa_venta_id = int(df_presas['id'][df_presas['nombre'] == presa_venta])
 
         with c3:
-            cantidad_venta = st.number_input('Ingrese la cantidad en Kg:', key=f'e{n+3}')
+            cantidad_venta = st.number_input('Ingrese la cantidad en Kg:', key=f'e{n+3}', min_value=0.000)
         
         with c4:
             valor_unitario_venta = st.number_input('Ingrese el valor unitario: ', step=1, key=f'i{n+4}')
@@ -135,7 +135,8 @@ with st.container(border=True):
 with st.container(border=True):
     if st.toggle('Ver ventas realizadas'):
         
-        @st.cache_data(show_spinner=True)
+        
+        #@st.cache_data(show_spinner=True)
         def consultarVentas():
             df_ventas = util.cosnultaQuery(f'''
                                         SELECT IDENTIFICACION_CLIENTE AS "N. Identificación",
