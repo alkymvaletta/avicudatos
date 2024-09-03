@@ -113,22 +113,44 @@ with st.container(border=True):
         if st.checkbox('Tabla datos de referencia'):
             st.dataframe(df_filtrado, hide_index=True, use_container_width=True)
 
+# Se crea función para mergear camada y galpon en el mismo DF
+def unirCamadaGalpon(user_id):
+    df_camadas = util.consultarCamadas(user_id)
+    df_camadas_merged = pd.merge(df_camadas, df_galpones, how='left', left_on='galpon_id', right_on='galpon_id')
+    df_camadas_merged = df_camadas_merged.rename(columns={'cantidad':'Ingresados', 'fecha_inicio':'Fecha ingreso', 'fecha_estimada_sacrificio':'Sacrificio estimado', 'muertes':'Muertes', 'descartes':'Descartes', 'faenados':'Sacrificados'})
+    df_camadas_merged['Fecha ingreso'] = pd.to_datetime(df_camadas_merged['Fecha ingreso']).dt.date
+    df_camadas_merged['Dias'] = (datetime.now().date() - df_camadas_merged['Fecha ingreso']).apply(lambda x: x.days)
+    df_camadas_merged['Disponibles'] =df_camadas_merged['Ingresados'] - df_camadas_merged['Muertes'] - df_camadas_merged['Descartes'] - df_camadas_merged['Sacrificados']
+    df_camadas_merged['galponEingreso'] = df_camadas_merged['Galpón'].map(str) + ' ingresado ' + df_camadas_merged['Fecha ingreso'].map(str)
+    return df_camadas_merged
+
+########## Por terminar
 with st.container(border=True):
     if st.toggle('Comparación de desempeño'):
+        df_camadas_comparar = unirCamadaGalpon(user_id)
+        camada_comparar = st.selectbox('Selecciona la camada a comparar', options=df_camadas_comparar['galponEingreso'])
+        camada_comparar_id = int(df_camadas_comparar['id'][df_camadas_comparar['galponEingreso'] == camada_comparar].values[0])
+        df_camadas_comparar
+        camada_comparar_id
+        df_promedio_pesos = util.cosnultaQuery(f'''
+                                                SELECT *
+                                                FROM PUBLIC.PROMEDIO_MEDICIONES_PESOS
+                                                WHERE CAMADA_ID = {camada_comparar_id}
+                                                ORDER BY FECHA ASC
+                                                ''')
+        df_promedio_pesos
+        
+        dias_comparar = df_promedio_pesos['fecha'][1] - df_camadas_comparar['Fecha ingreso'][0]
+        dias_comparar
         st.write('Sale la comparación')
+
 
 # Análisis de las camadas
 with st.container(border=True):
     if st.toggle('Análisis de tus camadas'):
         # Selecciona la camada que se va a analisar
         
-        df_camadas = util.consultarCamadas(user_id)
-        df_camadas_merged = pd.merge(df_camadas, df_galpones, how='left', left_on='galpon_id', right_on='galpon_id')
-        df_camadas_merged = df_camadas_merged.rename(columns={'cantidad':'Ingresados', 'fecha_inicio':'Fecha ingreso', 'fecha_estimada_sacrificio':'Sacrificio estimado', 'muertes':'Muertes', 'descartes':'Descartes', 'faenados':'Sacrificados'})
-        df_camadas_merged['Fecha ingreso'] = pd.to_datetime(df_camadas_merged['Fecha ingreso']).dt.date
-        df_camadas_merged['Dias'] = (datetime.now().date() - df_camadas_merged['Fecha ingreso']).apply(lambda x: x.days)
-        df_camadas_merged['Disponibles'] =df_camadas_merged['Ingresados'] - df_camadas_merged['Muertes'] - df_camadas_merged['Descartes'] - df_camadas_merged['Sacrificados']
-        df_camadas_merged['galponEingreso'] = df_camadas_merged['Galpón'].map(str) + ' ingresado ' + df_camadas_merged['Fecha ingreso'].map(str)
+        df_camadas_merged = unirCamadaGalpon(user_id)
         
         camada_evualuar = st.selectbox('Selecciona la camada', options=df_camadas_merged['galponEingreso'])
         camada_evualuar_id = int(df_camadas_merged['id'][df_camadas_merged['galponEingreso'] == camada_evualuar])
