@@ -111,7 +111,7 @@ with st.container(border=True):
         #st.plotly_chart(fig_cosumo)
         
         if st.checkbox('Tabla datos de referencia'):
-            st.dataframe(df_filtrado, hide_index=True, use_container_width=True)
+            st.dataframe(df_filtrado[['Edad en días', 'Peso', 'Consumo alimento acumulado', 'Raza', 'sexo']], hide_index=True, use_container_width=True)
 
 # Se crea función para mergear camada y galpon en el mismo DF
 def unirCamadaGalpon(user_id):
@@ -233,7 +233,7 @@ with st.container(border=True):
                                                         line = (dict(color='green', width =2, dash='dot'))))
             
             # Se agrega nombre de ejes y nombres
-            fig_comparacion_desempeno_alimento.update_layout( title='Cosnumo de alimento acumulado y datos de referencia',
+            fig_comparacion_desempeno_alimento.update_layout( title='Consumo de alimento acumulado y datos de referencia',
                                                     xaxis_title = 'Días del ave',
                                                     yaxis_title = 'Gramos')
             
@@ -327,7 +327,7 @@ with st.container(border=True):
                 # Calculo de la conversión alimenticia
                 CA = round(consumo_promedio / peso_promedio, 4)
                 CA_diferencia = round(CA-CA_referencia, 4)
-                st.metric('Conv. Alimenticia - CA', CA, CA_diferencia)
+                st.metric('Conv. Alimenticia - CA', CA, CA_diferencia, delta_color='inverse')
         
         # Eficiencia Alimenticia - EA = Peso Prom / Conversión Alimenticia 
         with metr3:
@@ -444,8 +444,8 @@ with st.container(border=True):
             
             #st.scatter_chart(df_mortalidad_descarte, x = 'fecha', y=['Mortalidad', 'Descarte'], x_label='Fecha', y_label='Cantidad', color=["#FF0000", "#0000FF"])
             
-            #Se hace la gráfica
-            fig = px.bar(df_mortalidad_agg,
+            #Se hace la gráfica de barras de mortalidad
+            fig_mortalidad = px.bar(df_mortalidad_agg,
                             x='Causa',
                             y='Mortalidad',
                             color = 'Causa',
@@ -453,8 +453,17 @@ with st.container(border=True):
                             color_discrete_sequence= px.colors.qualitative.D3,
                             title='Causas de Mortalidad'
                         )
-            st.plotly_chart(fig, use_container_width=True)
-        
+            st.plotly_chart(fig_mortalidad, use_container_width=True)
+
+            #Se hace grafica de pie de distribución de mortalidad
+            fig_distribucion_mortalidad = px.pie(df_mortalidad_agg,
+                            values='Mortalidad',
+                            names='Causa',
+                            color_discrete_sequence= px.colors.qualitative.D3,
+                            title='Distribución de Causas de Mortalidad'
+                        )
+            st.plotly_chart(fig_distribucion_mortalidad, use_container_width=True)
+            
         st.divider()
         
         # Se hace Análisis de los Costos

@@ -68,6 +68,8 @@ else:
 
 df_razas = util.listaRazas()
 
+#df_camadas_merged
+
 ## Agergar o eliminar camadas
 st.subheader('Agrega o elimina camadas')
 with st.container(border=True):
@@ -116,12 +118,13 @@ with st.container(border=True):
                         st.success('Se agregó la camada exitosamente', icon=':material/done_all:')
                         st.rerun()
         
-        if df_camadas_merged.shape[0] >0:
+        if df_camadas_merged.shape[0] > 0:
             with tab2: #st.checkbox(':red[**Eliminar una camada**]', key='del_camada', value=False):
                 granja_eliminar_camada = st.selectbox('Selecciona la camada a eliminar', options=df_camadas_merged['Granja'])
                 galpon_eliminar_camada = st.selectbox('Selecciona la camada a eliminar', options=df_camadas_merged['Galpón'][df_camadas_merged['Granja'] == granja_eliminar_camada])
                 galpon_eliminar_camada_id = int(df_camadas_merged['id'][df_camadas_merged['Galpón'] == galpon_eliminar_camada].values[0])
-                st.write(f'El galpón seleccionado tiene un total de **{df_camadas_merged["Cantidad"].values[0]}** aves')
+                df_camadas_merged
+                st.write(f'El galpón seleccionado tiene un total de **{df_camadas_merged["Ingresados"].values[0]}** aves')
                 aceptar_eliminar = st.checkbox('Comprendo que al **Eliminar** el proceso no se puede deshacer', key='camada_eliminar')
                 if st.button('Eliminar camada', disabled=not(aceptar_eliminar), type='primary'):
                     resultado_eliminar_camada = util.quitarCamada(galpon_eliminar_camada_id)
