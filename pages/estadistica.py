@@ -128,20 +128,60 @@ def unirCamadaGalpon(user_id):
 with st.container(border=True):
     if st.toggle('Comparación de desempeño'):
         df_camadas_comparar = unirCamadaGalpon(user_id)
-        camada_comparar = st.selectbox('Selecciona la camada a comparar', options=df_camadas_comparar['galponEingreso'])
-        camada_comparar_id = int(df_camadas_comparar['id'][df_camadas_comparar['galponEingreso'] == camada_comparar].values[0])
-        df_camadas_comparar
-        camada_comparar_id
-        df_promedio_pesos = util.cosnultaQuery(f'''
-                                                SELECT *
-                                                FROM PUBLIC.PROMEDIO_MEDICIONES_PESOS
-                                                WHERE CAMADA_ID = {camada_comparar_id}
-                                                ORDER BY FECHA ASC
-                                                ''')
-        df_promedio_pesos
         
-        dias_comparar = df_promedio_pesos['fecha'][1] - df_camadas_comparar['Fecha ingreso'][0]
-        dias_comparar
+        if df_camadas_comparar.shape[0] == 0:
+            st.info('Aún no haz registrado costos asociados a tu camada', icon=':material/notifications:')
+        
+        else:
+            camada_comparar = st.selectbox('Selecciona la camada a comparar', options=df_camadas_comparar['galponEingreso'])
+            camada_comparar_id = int(df_camadas_comparar['id'][df_camadas_comparar['galponEingreso'] == camada_comparar].values[0])
+            df_promedio_pesos = util.cosnultaQuery(f'''
+                                                    SELECT *
+                                                    FROM PUBLIC.PROMEDIO_MEDICIONES_PESOS
+                                                    WHERE CAMADA_ID = {camada_comparar_id}
+                                                    ORDER BY FECHA ASC
+                                                    ''')
+            
+            #Se agrega columna con fecha de ingreso de la camada seleccionada
+            df_promedio_pesos['ingreso'] = df_camadas_comparar['Fecha ingreso'].values[0]
+            
+            df_promedio_pesos['dias'] = (df_promedio_pesos['fecha'] - df_promedio_pesos['ingreso']).apply(lambda x: x.days)
+            dias_comparacion = df_promedio_pesos['dias'].max()
+            
+            # Tablas de referencia
+            # dias_comparacion
+            # df_promedio_pesos
+            # df_camadas_comparar
+            
+            #Dataframe de datos de referencia de de acuerdo a raza y días
+            df_desempeno_comp = df_desempeno[['Edad en días','Consumo alimento acumulado', 'Peso']][(df_desempeno['raza_id'] == (df_camadas_comparar['raza'][df_camadas_comparar['id'] == camada_comparar_id]).values[0]) &
+                                                                                                    (df_desempeno['sexo'] == 'mixto') &
+                                                                                                    (df_desempeno['Edad en días'] <= dias_comparacion)]
+            
+            #Creamos la figura a la cual se va a comparar
+            fig_comparacion_desempeno_peso = go.Figure()
+            
+            # Se agrega trazo de datos promedio
+            fig_comparacion_desempeno_peso.add_trace(go.Line(x=df_promedio_pesos['dias'],
+                                                        y = df_promedio_pesos['promedio'],
+                                                        name = 'Ganancia',
+                                                        line = (dict(color='firebrick', width =2))))
+            
+            # Se agrega trazo de de datos de desempeño
+            fig_comparacion_desempeno_peso.add_trace(go.Line(x=df_desempeno_comp['Edad en días'],
+                                                        y = df_desempeno_comp['Peso'],
+                                                        name = 'Consumo',
+                                                        line = (dict(color='green', width =2, dash='dot'))))
+            
+            # Se agrega nombre de ejes y nombres
+            fig_comparacion_desempeno_peso.update_layout( title='Ganancia de peso y datos de referencia',
+                                                    xaxis_title = 'Días del ave',
+                                                    yaxis_title = 'Gramos')
+            
+            #df_desempeno_comp
+            
+            st.plotly_chart(fig_comparacion_desempeno_peso)
+        
         st.write('Sale la comparación')
 
 
