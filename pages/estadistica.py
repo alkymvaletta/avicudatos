@@ -121,7 +121,7 @@ def unirCamadaGalpon(user_id):
     df_camadas_merged['Fecha ingreso'] = pd.to_datetime(df_camadas_merged['Fecha ingreso']).dt.date
     df_camadas_merged['Dias'] = (datetime.now().date() - df_camadas_merged['Fecha ingreso']).apply(lambda x: x.days)
     df_camadas_merged['Disponibles'] =df_camadas_merged['Ingresados'] - df_camadas_merged['Muertes'] - df_camadas_merged['Descartes'] - df_camadas_merged['Sacrificados']
-    df_camadas_merged['galponEingreso'] = df_camadas_merged['Galpón'].map(str) + ' ingresado ' + df_camadas_merged['Fecha ingreso'].map(str)
+    df_camadas_merged['galponEingreso'] = ' Ingresado el ' + df_camadas_merged['Fecha ingreso'].map(str) + ' en el galpón '+ df_camadas_merged['Galpón'].map(str)
     return df_camadas_merged
 
 ########## Por terminar
@@ -142,23 +142,41 @@ with st.container(border=True):
                                                     ORDER BY FECHA ASC
                                                     ''')
             
+            df_promedio_alimento = util.cosnultaQuery(f'''
+                                                        SELECT ALIMENTO.CAMADA_ID,
+                                                            ALIMENTO.PESO,
+                                                            ALIMENTO.TIPO_ALIMENTO,
+                                                            ALIMENTO.FECHA,
+                                                            ALIMENTO.HORA,
+                                                            CAMADA.FECHA_INICIO,
+                                                            CAMADA.CANTIDAD,
+                                                            SUM(ALIMENTO.PESO) OVER (PARTITION BY ALIMENTO.CAMADA_ID ORDER BY ALIMENTO.FECHA, ALIMENTO.HORA) AS PESO_ACUMULADO,
+                                                            SUM(ALIMENTO.PESO) OVER (PARTITION BY ALIMENTO.CAMADA_ID ORDER BY ALIMENTO.FECHA, ALIMENTO.HORA) * 1000 / CAMADA.CANTIDAD AS CONSUMO_PROMEDIO,
+                                                            (ALIMENTO.FECHA - CAMADA.FECHA_INICIO) AS DIAS
+                                                        FROM PUBLIC.ALIMENTO
+                                                        JOIN PUBLIC.CAMADA ON CAMADA.ID = ALIMENTO.CAMADA_ID
+                                                        WHERE CAMADA_ID = {camada_comparar_id}
+                                                        ORDER BY ALIMENTO.FECHA, ALIMENTO.HORA
+                                                    ''')
+            
             #Se agrega columna con fecha de ingreso de la camada seleccionada
             df_promedio_pesos['ingreso'] = df_camadas_comparar['Fecha ingreso'].values[0]
             
             df_promedio_pesos['dias'] = (df_promedio_pesos['fecha'] - df_promedio_pesos['ingreso']).apply(lambda x: x.days)
-            dias_comparacion = df_promedio_pesos['dias'].max()
+            dias_comparacion_peso = df_promedio_pesos['dias'].max()
             
-            # Tablas de referencia
-            # dias_comparacion
-            # df_promedio_pesos
-            # df_camadas_comparar
+            # Buscamos el máximo peso de comparación
+            peso_maximo = df_promedio_pesos['promedio'][df_promedio_pesos['dias'] == dias_comparacion_peso].values[0]
             
             #Dataframe de datos de referencia de de acuerdo a raza y días
-            df_desempeno_comp = df_desempeno[['Edad en días','Consumo alimento acumulado', 'Peso']][(df_desempeno['raza_id'] == (df_camadas_comparar['raza'][df_camadas_comparar['id'] == camada_comparar_id]).values[0]) &
+            df_desempeno_comp = df_desempeno[['Edad en días', 'Peso']][(df_desempeno['raza_id'] == (df_camadas_comparar['raza'][df_camadas_comparar['id'] == camada_comparar_id]).values[0]) &
                                                                                                     (df_desempeno['sexo'] == 'mixto') &
-                                                                                                    (df_desempeno['Edad en días'] <= dias_comparacion)]
+                                                                                                    (df_desempeno['Edad en días'] <= dias_comparacion_peso)]
             
-            #Creamos la figura a la cual se va a comparar
+            # Buscamos el peso de comparación de referencia
+            peso_referencia = df_desempeno['Peso'][df_desempeno['Edad en días'] == dias_comparacion_peso].values[0]
+            
+            #Creamos la figura a la cual se va a comparar el PESO
             fig_comparacion_desempeno_peso = go.Figure()
             
             # Se agrega trazo de datos promedio
@@ -170,7 +188,7 @@ with st.container(border=True):
             # Se agrega trazo de de datos de desempeño
             fig_comparacion_desempeno_peso.add_trace(go.Line(x=df_desempeno_comp['Edad en días'],
                                                         y = df_desempeno_comp['Peso'],
-                                                        name = 'Consumo',
+                                                        name = 'Referencia',
                                                         line = (dict(color='green', width =2, dash='dot'))))
             
             # Se agrega nombre de ejes y nombres
@@ -178,11 +196,66 @@ with st.container(border=True):
                                                     xaxis_title = 'Días del ave',
                                                     yaxis_title = 'Gramos')
             
+            st.plotly_chart(fig_comparacion_desempeno_peso)
+            
+            if peso_maximo < peso_referencia:
+                st.write(f'''
+                        La ganancia de peso de repecto a los datos de refencia de la raza se encuentran 
+                            :red[**{peso_referencia -peso_maximo} gramos
+                            por debajo**] del peso de referencia, lo que equivale a **{round((peso_referencia - peso_maximo)/peso_referencia, 4) * 100}%**''')
+            else:
+                st.write(f'''La ganancia de peso de repecto a los datos de refencia de la raza se encuentran 
+                            :green[**{ peso_maximo - peso_referencia} gramos
+                             por encima**] del peso de referencia, lo que equivale a **{round((peso_maximo - peso_referencia)/peso_referencia, 4) * 100}%**''')
+            
+            #Creamos la figura a la cual se va a comparar el CONSUMO ALIMENTO
+            
+            dias_comparacion_alimento = df_promedio_alimento['dias'].max()
+
+            df_desempeno_comp_alimento = df_desempeno[['Edad en días', 'Consumo alimento acumulado']][(df_desempeno['raza_id'] == (df_camadas_comparar['raza'][df_camadas_comparar['id'] == camada_comparar_id]).values[0]) &
+                                                                                                    (df_desempeno['sexo'] == 'mixto') &
+                                                                                                    (df_desempeno['Edad en días'] <= dias_comparacion_alimento)]
+            
+            fig_comparacion_desempeno_alimento = go.Figure()
+            
+            # Se agrega trazo de datos promedio usuario
+            fig_comparacion_desempeno_alimento.add_trace(go.Line(x=df_promedio_alimento['dias'],
+                                                        y = df_promedio_alimento['consumo_promedio'],
+                                                        name = 'Consumo',
+                                                        line = (dict(color='firebrick', width =2))))
+            
             #df_desempeno_comp
             
-            st.plotly_chart(fig_comparacion_desempeno_peso)
-        
-        st.write('Sale la comparación')
+            # Se agrega trazo de de datos de desempeño
+            fig_comparacion_desempeno_alimento.add_trace(go.Line(x=df_desempeno_comp_alimento['Edad en días'],
+                                                        y = df_desempeno_comp_alimento['Consumo alimento acumulado'],
+                                                        name = 'Referencia',
+                                                        line = (dict(color='green', width =2, dash='dot'))))
+            
+            # Se agrega nombre de ejes y nombres
+            fig_comparacion_desempeno_alimento.update_layout( title='Cosnumo de alimento acumulado y datos de referencia',
+                                                    xaxis_title = 'Días del ave',
+                                                    yaxis_title = 'Gramos')
+            
+            st.plotly_chart(fig_comparacion_desempeno_alimento)
+            
+            alimento_referencia = df_desempeno_comp_alimento['Consumo alimento acumulado'].max()
+            alimento_maximo = float(df_promedio_alimento['consumo_promedio'].max())
+            
+
+            if alimento_maximo < alimento_referencia:
+                st.write(f'''
+                        El consumo de alimento de las aves repecto a los datos de refencia de la raza se encuentran 
+                            :red[**{round(alimento_referencia -alimento_maximo, 2)} gramos
+                            por debajo**] del peso de referencia, lo que equivale a **{round((alimento_referencia - alimento_referencia)/alimento_referencia, 4) * 100}%**''')
+            else:
+                st.write(f'''La ganancia de peso de repecto a los datos de refencia de la raza se encuentran 
+                            :green[**{ round(alimento_maximo - alimento_referencia,2)} gramos
+                             por encima**] del peso de referencia, lo que equivale a **{round((alimento_maximo - peso_referencia)/alimento_referencia, 4) * 100}%**''')
+            
+            
+            #st.write()
+
 
 
 # Análisis de las camadas
