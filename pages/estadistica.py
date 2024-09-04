@@ -492,9 +492,19 @@ with st.container(border=True):
                                 y= 'Costo Total',
                                 color = 'Tipo',
                                 color_discrete_sequence= px.colors.qualitative.D3,
-                                text_auto=True)
+                                text_auto=True,
+                                title='Constos de producción de camada')
             
             st.plotly_chart(fig_costos, use_container_width=True)
+            
+            fig_pie_costos = px.pie(df_costoCamada_agg,
+                                names= 'Tipo',
+                                values= 'Costo Total',
+                                color = 'Tipo',
+                                color_discrete_sequence= px.colors.qualitative.D3,
+                                title= 'Distribución de los costos de producción')
+            
+            st.plotly_chart(fig_pie_costos, use_container_width=True)
         
 # Histórico de las camadas
 with st.container(border=True):
