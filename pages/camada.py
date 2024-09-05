@@ -89,7 +89,6 @@ with st.container(border=True):
             proveedor_camada_id = int(df_proveedores['id'][df_proveedores['Nombre'] == proveedor_camada].values[0])
             fecha_ent_camada = st.date_input('Ingresa fecha de inicio de camada')
             fecha_faena_camada = util.sumaDias(fecha_ent_camada)
-            
             if cant_camada > df_galpones['Capacidad'][df_galpones['galpon_id'] == galpon_camada_id].values[0]:
                 st.warning('El tamaño de la camada excede la capacidad del galpón')
                 continuar = st.checkbox('Estas seguro que deseas continuar')
@@ -110,7 +109,8 @@ with st.container(border=True):
                     resultado_agg_camada = util.agregarCamada(granja_camada_id, 
                                                         galpon_camada_id, 
                                                         cant_camada, 
-                                                        raza_camada_id, 
+                                                        raza_camada_id,
+                                                        proveedor_camada_id,
                                                         fecha_ent_camada,
                                                         fecha_faena_camada,
                                                         user_id)

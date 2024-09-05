@@ -375,7 +375,7 @@ def agregarCamada(granja_id, galpon_id, cant_camada, raza_id, proveedor_id, fech
 
 # Suma días a la fecha inicial de los pollos para estimar la fecha de faena
 def sumaDias(inicial):
-    final = inicial + timedelta(days=45)
+    final = inicial + timedelta(days=42)
     return final
 
 # Elimina la camada de la base de datos

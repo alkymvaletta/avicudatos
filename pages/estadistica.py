@@ -159,102 +159,107 @@ with st.container(border=True):
                                                         ORDER BY ALIMENTO.FECHA, ALIMENTO.HORA
                                                     ''')
             
-            #Se agrega columna con fecha de ingreso de la camada seleccionada
-            df_promedio_pesos['ingreso'] = df_camadas_comparar['Fecha ingreso'].values[0]
+            if (df_promedio_pesos.shape[0] == 0) and (df_promedio_alimento.shape[0]== 0):
+                st.warning('Aún no registras datos para ofrecer una comparación de desempeño', icon=':material/error:')
             
-            df_promedio_pesos['dias'] = (df_promedio_pesos['fecha'] - df_promedio_pesos['ingreso']).apply(lambda x: x.days)
-            dias_comparacion_peso = df_promedio_pesos['dias'].max()
-            
-            # Buscamos el máximo peso de comparación
-            peso_maximo = df_promedio_pesos['promedio'][df_promedio_pesos['dias'] == dias_comparacion_peso].values[0]
-            
-            #Dataframe de datos de referencia de de acuerdo a raza y días
-            df_desempeno_comp = df_desempeno[['Edad en días', 'Peso']][(df_desempeno['raza_id'] == (df_camadas_comparar['raza'][df_camadas_comparar['id'] == camada_comparar_id]).values[0]) &
-                                                                                                    (df_desempeno['sexo'] == 'mixto') &
-                                                                                                    (df_desempeno['Edad en días'] <= dias_comparacion_peso)]
-            
-            # Buscamos el peso de comparación de referencia
-            peso_referencia = df_desempeno['Peso'][df_desempeno['Edad en días'] == dias_comparacion_peso].values[0]
-            
-            #Creamos la figura a la cual se va a comparar el PESO
-            fig_comparacion_desempeno_peso = go.Figure()
-            
-            # Se agrega trazo de datos promedio
-            fig_comparacion_desempeno_peso.add_trace(go.Line(x=df_promedio_pesos['dias'],
-                                                        y = df_promedio_pesos['promedio'],
-                                                        name = 'Ganancia',
-                                                        line = (dict(color='firebrick', width =2))))
-            
-            # Se agrega trazo de de datos de desempeño
-            fig_comparacion_desempeno_peso.add_trace(go.Line(x=df_desempeno_comp['Edad en días'],
-                                                        y = df_desempeno_comp['Peso'],
-                                                        name = 'Referencia',
-                                                        line = (dict(color='green', width =2, dash='dot'))))
-            
-            # Se agrega nombre de ejes y nombres
-            fig_comparacion_desempeno_peso.update_layout( title='Ganancia de peso y datos de referencia',
-                                                    xaxis_title = 'Días del ave',
-                                                    yaxis_title = 'Gramos')
-            
-            st.plotly_chart(fig_comparacion_desempeno_peso)
-            
-            if peso_maximo < peso_referencia:
-                st.write(f'''
-                        La ganancia de peso de repecto a los datos de refencia de la raza se encuentran 
-                            :red[**{peso_referencia -peso_maximo} gramos
-                            por debajo**] del peso de referencia, lo que equivale a **{round((peso_referencia - peso_maximo)/peso_referencia, 4) * 100}%**''')
             else:
-                st.write(f'''La ganancia de peso de repecto a los datos de refencia de la raza se encuentran 
-                            :green[**{ peso_maximo - peso_referencia} gramos
-                             por encima**] del peso de referencia, lo que equivale a **{round((peso_maximo - peso_referencia)/peso_referencia, 4) * 100}%**''')
-            
-            #Creamos la figura a la cual se va a comparar el CONSUMO ALIMENTO
-            
-            dias_comparacion_alimento = df_promedio_alimento['dias'].max()
+                #Se agrega columna con fecha de ingreso de la camada seleccionada
+                df_promedio_pesos['ingreso'] = df_camadas_comparar['Fecha ingreso'].values[0]
+                
+                df_promedio_pesos['dias'] = (df_promedio_pesos['fecha'] - df_promedio_pesos['ingreso']).apply(lambda x: x.days)
+                dias_comparacion_peso = df_promedio_pesos['dias'].max()
+                
+                dias_comparacion_peso
+                if dias_comparacion_peso != None:
+                    
+                    # Buscamos el máximo peso de comparación
+                    peso_maximo = df_promedio_pesos['promedio'][df_promedio_pesos['dias'] == dias_comparacion_peso].values[0]
+                    
+                    #Dataframe de datos de referencia de de acuerdo a raza y días
+                    df_desempeno_comp = df_desempeno[['Edad en días', 'Peso']][(df_desempeno['raza_id'] == (df_camadas_comparar['raza'][df_camadas_comparar['id'] == camada_comparar_id]).values[0]) &
+                                                                                                            (df_desempeno['sexo'] == 'mixto') &
+                                                                                                            (df_desempeno['Edad en días'] <= dias_comparacion_peso)]
+                    
+                    # Buscamos el peso de comparación de referencia
+                    peso_referencia = df_desempeno['Peso'][df_desempeno['Edad en días'] == dias_comparacion_peso].values[0]
+                    
+                    #Creamos la figura a la cual se va a comparar el PESO
+                    fig_comparacion_desempeno_peso = go.Figure()
+                    
+                    # Se agrega trazo de datos promedio
+                    fig_comparacion_desempeno_peso.add_trace(go.Line(x=df_promedio_pesos['dias'],
+                                                                y = df_promedio_pesos['promedio'],
+                                                                name = 'Ganancia',
+                                                                line = (dict(color='firebrick', width =2))))
+                    
+                    # Se agrega trazo de de datos de desempeño
+                    fig_comparacion_desempeno_peso.add_trace(go.Line(x=df_desempeno_comp['Edad en días'],
+                                                                y = df_desempeno_comp['Peso'],
+                                                                name = 'Referencia',
+                                                                line = (dict(color='green', width =2, dash='dot'))))
+                    
+                    # Se agrega nombre de ejes y nombres
+                    fig_comparacion_desempeno_peso.update_layout( title='Ganancia de peso y datos de referencia',
+                                                            xaxis_title = 'Días del ave',
+                                                            yaxis_title = 'Gramos')
+                    
+                    st.plotly_chart(fig_comparacion_desempeno_peso)
+                    
+                    if peso_maximo < peso_referencia:
+                        st.write(f'''
+                                La ganancia de peso de repecto a los datos de refencia de la raza se encuentran 
+                                    :red[**{peso_referencia -peso_maximo} gramos
+                                    por debajo**] del peso de referencia, lo que equivale a **{round((peso_referencia - peso_maximo)/peso_referencia, 4) * 100}%**''')
+                    else:
+                        st.write(f'''La ganancia de peso de repecto a los datos de refencia de la raza se encuentran 
+                                    :green[**{ peso_maximo - peso_referencia} gramos
+                                    por encima**] del peso de referencia, lo que equivale a **{round((peso_maximo - peso_referencia)/peso_referencia, 4) * 100}%**''')
+                    
+                    #Creamos la figura a la cual se va a comparar el CONSUMO ALIMENTO
+                    
+                    dias_comparacion_alimento = df_promedio_alimento['dias'].max()
 
-            df_desempeno_comp_alimento = df_desempeno[['Edad en días', 'Consumo alimento acumulado']][(df_desempeno['raza_id'] == (df_camadas_comparar['raza'][df_camadas_comparar['id'] == camada_comparar_id]).values[0]) &
-                                                                                                    (df_desempeno['sexo'] == 'mixto') &
-                                                                                                    (df_desempeno['Edad en días'] <= dias_comparacion_alimento)]
-            
-            fig_comparacion_desempeno_alimento = go.Figure()
-            
-            # Se agrega trazo de datos promedio usuario
-            fig_comparacion_desempeno_alimento.add_trace(go.Line(x=df_promedio_alimento['dias'],
-                                                        y = df_promedio_alimento['consumo_promedio'],
-                                                        name = 'Consumo',
-                                                        line = (dict(color='firebrick', width =2))))
-            
-            #df_desempeno_comp
-            
-            # Se agrega trazo de de datos de desempeño
-            fig_comparacion_desempeno_alimento.add_trace(go.Line(x=df_desempeno_comp_alimento['Edad en días'],
-                                                        y = df_desempeno_comp_alimento['Consumo alimento acumulado'],
-                                                        name = 'Referencia',
-                                                        line = (dict(color='green', width =2, dash='dot'))))
-            
-            # Se agrega nombre de ejes y nombres
-            fig_comparacion_desempeno_alimento.update_layout( title='Consumo de alimento acumulado y datos de referencia',
-                                                    xaxis_title = 'Días del ave',
-                                                    yaxis_title = 'Gramos')
-            
-            st.plotly_chart(fig_comparacion_desempeno_alimento)
-            
-            alimento_referencia = df_desempeno_comp_alimento['Consumo alimento acumulado'].max()
-            alimento_maximo = float(df_promedio_alimento['consumo_promedio'].max())
-            
+                    df_desempeno_comp_alimento = df_desempeno[['Edad en días', 'Consumo alimento acumulado']][(df_desempeno['raza_id'] == (df_camadas_comparar['raza'][df_camadas_comparar['id'] == camada_comparar_id]).values[0]) &
+                                                                                                            (df_desempeno['sexo'] == 'mixto') &
+                                                                                                            (df_desempeno['Edad en días'] <= dias_comparacion_alimento)]
+                    
+                    fig_comparacion_desempeno_alimento = go.Figure()
+                    
+                    # Se agrega trazo de datos promedio usuario
+                    fig_comparacion_desempeno_alimento.add_trace(go.Line(x=df_promedio_alimento['dias'],
+                                                                y = df_promedio_alimento['consumo_promedio'],
+                                                                name = 'Consumo',
+                                                                line = (dict(color='firebrick', width =2))))
+                    
+                    #df_desempeno_comp
+                    
+                    # Se agrega trazo de de datos de desempeño
+                    fig_comparacion_desempeno_alimento.add_trace(go.Line(x=df_desempeno_comp_alimento['Edad en días'],
+                                                                y = df_desempeno_comp_alimento['Consumo alimento acumulado'],
+                                                                name = 'Referencia',
+                                                                line = (dict(color='green', width =2, dash='dot'))))
+                    
+                    # Se agrega nombre de ejes y nombres
+                    fig_comparacion_desempeno_alimento.update_layout( title='Consumo de alimento acumulado y datos de referencia',
+                                                            xaxis_title = 'Días del ave',
+                                                            yaxis_title = 'Gramos')
+                    
+                    st.plotly_chart(fig_comparacion_desempeno_alimento)
+                    
+                    alimento_referencia = df_desempeno_comp_alimento['Consumo alimento acumulado'].max()
+                    alimento_maximo = float(df_promedio_alimento['consumo_promedio'].max())
+                    
 
-            if alimento_maximo < alimento_referencia:
-                st.write(f'''
-                        El consumo de alimento de las aves repecto a los datos de refencia de la raza se encuentran 
-                            :red[**{round(alimento_referencia -alimento_maximo, 2)} gramos
-                            por debajo**] del peso de referencia, lo que equivale a **{round((alimento_referencia - alimento_referencia)/alimento_referencia, 4) * 100}%**''')
-            else:
-                st.write(f'''La ganancia de peso de repecto a los datos de refencia de la raza se encuentran 
-                            :green[**{ round(alimento_maximo - alimento_referencia,2)} gramos
-                             por encima**] del peso de referencia, lo que equivale a **{round((alimento_maximo - peso_referencia)/alimento_referencia, 4) * 100}%**''')
-            
-            
-            #st.write()
+                    if alimento_maximo < alimento_referencia:
+                        st.write(f'''
+                                El consumo de alimento de las aves repecto a los datos de refencia de la raza se encuentran 
+                                    :red[**{round(alimento_referencia -alimento_maximo, 2)} gramos
+                                    por debajo**] del peso de referencia, lo que equivale a **{round((alimento_referencia - alimento_referencia)/alimento_referencia, 4) * 100}%**''')
+                    else:
+                        st.write(f'''La ganancia de peso de repecto a los datos de refencia de la raza se encuentran 
+                                    :green[**{ round(alimento_maximo - alimento_referencia,2)} gramos
+                                    por encima**] del peso de referencia, lo que equivale a **{round((alimento_maximo - peso_referencia)/alimento_referencia, 4) * 100}%**''')
+                #st.write()
 
 
 
@@ -282,7 +287,7 @@ with st.container(border=True):
             camada_sacrificio = df_camadas_merged['Sacrificados'].iloc[0]
             camada_raza = df_camadas_merged['raza'].iloc[0]
             
-            st.write(f'''La camada se ingresó el **{camada_ingreso}** encuentra en la granja **{camada_granja}** el el galpón **{camada_galpon}** 
+            st.write(f'''La camada se ingresó el **{camada_ingreso}** encuentra en la granja **{camada_granja}** en el galpón **{camada_galpon}** 
                     que tiene una capacidad de **{camada_capacidad}** aves. Se ingresaron un total de **{camada_ingresados}** y llevan 
                     **{camada_dias}** dias, en los cuales han muerto **{camada_muerte}** y se han descartado **{camada_descarte}** aves. 
                     Hasta la fecha se han sacrificado **{camada_sacrificio}**''')
@@ -404,7 +409,7 @@ with st.container(border=True):
             ### Se hace grafico st.scatter_chart donde muestre las muertes en un color y los descartes en otro
             ### donde se vea las muertes de las aves
             
-            @st.cache_data(ttl=180)
+            #@st.cache_data(ttl=180)
             def buscarMortalidad_descarte():
                 df_mortalidad = util.cosnultaQuery(f'''
                                                     SELECT CAMADA_ID,
@@ -435,18 +440,43 @@ with st.container(border=True):
             # Se aplica mensaje en caso de que no se haya presentado mortalidad o descarte
             if (df_mortalidad.shape[0] == 0 ) and (df_descarte.shape[0] == 0):
                 st.info('Aún no haz registrado mortalidad o descartes en tu camada')
-            
+
             else:
+                
                 df_mortalidad_agg = df_mortalidad.groupby('Causa')['Mortalidad'].sum().reset_index().sort_values(by='Mortalidad', ascending=False)
                 
-                fig_mortalidad_descarte = px.scatter(df_mortalidad_descarte, 
-                                                    x = 'fecha', 
-                                                    y=['Mortalidad', 'Descarte'],
-                                                    )
+                suma_mortalidad= df_mortalidad_descarte['Mortalidad'].values.sum()
+                suma_descarte= df_mortalidad_descarte['Descarte'].values.sum()
                 
-                st.plotly_chart(fig_mortalidad_descarte, use_container_width=True)
+                # Si hay eventos en mortalidad y descarte
+                if (suma_mortalidad > 0) and (suma_descarte > 0):
+                    fig_mortalidad_descarte = px.scatter(df_mortalidad_descarte, 
+                                                        x = 'fecha', 
+                                                        y=['Mortalidad', 'Descarte'],
+                                                        )
+                    
+                    #Se grafica scatter de mortalidad y descarte
+                    st.plotly_chart(fig_mortalidad_descarte, use_container_width=True)
+
+                # Si solo se ha presentado mortalidad
+                elif suma_mortalidad > 0:
+                    fig_mortalidad_descarte = px.scatter(df_mortalidad_descarte, 
+                                                        x = 'fecha', 
+                                                        y='Mortalidad',
+                                                        )
+                    
+                    #Se grafica scatter de mortalidad y descarte
+                    st.plotly_chart(fig_mortalidad_descarte, use_container_width=True)
                 
-                #st.scatter_chart(df_mortalidad_descarte, x = 'fecha', y=['Mortalidad', 'Descarte'], x_label='Fecha', y_label='Cantidad', color=["#FF0000", "#0000FF"])
+                # Si solo se ha presentado descarte
+                elif suma_descarte > 0:
+                    fig_mortalidad_descarte = px.scatter(df_mortalidad_descarte, 
+                                                        x = 'fecha', 
+                                                        y='Descarte',
+                                                        )
+                    
+                    #Se grafica scatter de mortalidad y descarte
+                    st.plotly_chart(fig_mortalidad_descarte, use_container_width=True)
                 
                 #Se hace la gráfica de barras de mortalidad
                 fig_mortalidad = px.bar(df_mortalidad_agg,
@@ -525,4 +555,4 @@ with st.container(border=True):
 # Histórico de las camadas
 with st.container(border=True):
     if st.toggle('Histórico de tus camadas'):
-        st.write('Ver el histórico de las camadas')
+        st.write('test')
