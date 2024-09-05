@@ -796,3 +796,60 @@ def finalizarCamada(id_camada):
         except Exception as e:
             st.error(f"Error al eliminar la granja: {e}")
             return {'success':False}
+
+# Devuelve df con información relacionada con las camadas finalizadas
+def camadasFinalizadas(user_id):
+    conn, c = conectarDB()
+    if conn is not None and c is not None:
+        try:
+            #Consulta las camadas finalizadas e informacion relacionada
+            c.execute('''
+                    SELECT CAMADA.USER_ID,
+                        GRANJA.NOMBRE_GRANJA,
+                        GALPON.NOMBRE,
+                        CAMADA.GALPON_ID,
+                        CAMADA.CANTIDAD AS "Ingresados",
+                        FECHA_INICIO,
+                        FECHA_ESTIMADA_SACRIFICIO,
+                        RAZAS.NOMBRE,
+                        PROVEEDOR,
+                        CAMADA_ACTIVA,
+                        MUERTES,
+                        DESCARTES,
+                        FAENADOS,
+                        FINALIZADA
+                    FROM PUBLIC.CAMADA
+                    JOIN PUBLIC.GRANJA ON GRANJA.ID = CAMADA.GRANJA_ID
+                    JOIN PUBLIC.GALPON ON GALPON.ID = CAMADA.GALPON_ID
+                    JOIN PUBLIC.RAZAS ON RAZAS.ID = CAMADA.RAZA
+                    WHERE USER_ID = %s AND FINALIZADA = TRUE
+                    ''', (user_id,))
+            camadas_finalizadas = c.fetchall()
+            columnas = [desc[0] for desc in c.description]
+            df_camadas_finalizadas = pd.DataFrame(camadas_finalizadas, columns=columnas)
+            
+            #Consulta los costos relacionadas a las camadas
+            c.execute('''
+                    SELECT COSTOS.CAMADA_ID,
+                        TIPOS_COSTOS.TIPO AS "costos",
+                        SUM(COSTO_TOTAL) AS "total"
+                    FROM PUBLIC.COSTOS
+                    JOIN PUBLIC.TIPOS_COSTOS ON TIPOS_COSTOS.ID = COSTOS.TIPO_ID
+                    WHERE CAMADA_ID =
+                            (SELECT ID
+                                FROM PUBLIC.CAMADA
+                                WHERE USER_ID = %s
+                                    AND FINALIZADA = TRUE)
+                    GROUP BY TIPOS_COSTOS.TIPO, COSTOS.CAMADA_ID
+                    ''', (user_id,))
+            costos_camadas = c.fetchall()
+            columnas = [desc[0] for desc in c.description]
+            df_costos_camadas = pd.DataFrame(costos_camadas, columns=columnas)
+            
+            conn.commit()
+            conn.close()
+            return df_camadas_finalizadas, df_costos_camadas
+        
+        except Exception as e:
+            st.error(f"Error al eliminar la granja: {e}")
+            return {'success':False}
