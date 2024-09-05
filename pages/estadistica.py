@@ -265,255 +265,262 @@ with st.container(border=True):
         
         df_camadas_merged = unirCamadaGalpon(user_id)
         
-        camada_evualuar = st.selectbox('Selecciona la camada', options=df_camadas_merged['galponEingreso'])
-        camada_evualuar_id = int(df_camadas_merged['id'][df_camadas_merged['galponEingreso'] == camada_evualuar])
+        if df_camadas_merged.shape[0] != 0:
         
-        # Datos de camada de comparación
-        camada_ingreso = df_camadas_merged['Fecha ingreso'].iloc[0]
-        camada_granja = df_camadas_merged['Granja'].iloc[0]
-        camada_galpon = df_camadas_merged['Galpón'].iloc[0]
-        camada_capacidad = df_camadas_merged['Capacidad'].iloc[0]
-        camada_ingresados = df_camadas_merged['Ingresados'].iloc[0]
-        camada_dias = df_camadas_merged['Dias'].iloc[0]
-        camada_muerte = df_camadas_merged['Muertes'].iloc[0]
-        camada_descarte = df_camadas_merged['Descartes'].iloc[0]
-        camada_sacrificio = df_camadas_merged['Sacrificados'].iloc[0]
-        camada_raza = df_camadas_merged['raza'].iloc[0]
-        
-        st.write(f'''La camada se ingresó el **{camada_ingreso}** encuentra en la granja **{camada_granja}** el el galpón **{camada_galpon}** 
-                 que tiene una capacidad de **{camada_capacidad}** aves. Se ingresaron un total de **{camada_ingresados}** y llevan 
-                **{camada_dias}** dias, en los cuales han muerto **{camada_muerte}** y se han descartado **{camada_descarte}** aves. 
-                Hasta la fecha se han sacrificado **{camada_sacrificio}**''')
-        
-        # Se establecen columnas para las métricas.
-        st.divider()
-        
-        st.subheader('Análisis zootécnicos')
-        metr1, metr2, metr3, metr4 = st.columns(4)
-        
-        # Mortalidad
-        with metr1:
-            mortalidad = round((df_camadas_merged['Muertes'][df_camadas_merged['id'] == camada_evualuar_id] )/ (df_camadas_merged['Ingresados'][df_camadas_merged['id'] == camada_evualuar_id]),4)*100
-            st.metric('Mortalidad', value= f'{float(mortalidad)} %')
-        
-        #Conversión Alimenticia - CA = Consumo Alimento Promedio / Peso Prom
-        with metr2: 
-            df_consumo_alimento = util.cosnultaQuery(f'''SELECT SUM(PESO) AS TOTAL_ALIMENTO
-                                                        FROM PUBLIC.ALIMENTO
-                                                        WHERE (CAMADA_ID = {camada_evualuar_id})
-                                                        ''')
-            df_promedio_pesos = util.cosnultaQuery(f'''SELECT PROMEDIO
-                                                        FROM PUBLIC.PROMEDIO_MEDICIONES_PESOS
-                                                        WHERE FECHA =
-                                                                (SELECT MAX(FECHA)
-                                                                    FROM PUBLIC.PROMEDIO_MEDICIONES_PESOS
-                                                                    WHERE CAMADA_ID = {camada_evualuar_id})''')
+            camada_evualuar = st.selectbox('Selecciona la camada', options=df_camadas_merged['galponEingreso'])
+            camada_evualuar_id = int(df_camadas_merged['id'][df_camadas_merged['galponEingreso'] == camada_evualuar])
             
-            #Traemos la referencia de CA de acuerdo a los días transcurridos
-            CA_referencia = df_desempeno['CA'][(df_desempeno['Edad en días'] == camada_dias) & 
-                                                (df_desempeno['raza_id'] == camada_raza) &
-                                                (df_desempeno['sexo'] == 'mixto')].iloc[0]
+            # Datos de camada de comparación
+            camada_ingreso = df_camadas_merged['Fecha ingreso'].iloc[0]
+            camada_granja = df_camadas_merged['Granja'].iloc[0]
+            camada_galpon = df_camadas_merged['Galpón'].iloc[0]
+            camada_capacidad = df_camadas_merged['Capacidad'].iloc[0]
+            camada_ingresados = df_camadas_merged['Ingresados'].iloc[0]
+            camada_dias = df_camadas_merged['Dias'].iloc[0]
+            camada_muerte = df_camadas_merged['Muertes'].iloc[0]
+            camada_descarte = df_camadas_merged['Descartes'].iloc[0]
+            camada_sacrificio = df_camadas_merged['Sacrificados'].iloc[0]
+            camada_raza = df_camadas_merged['raza'].iloc[0]
             
-            if (df_consumo_alimento.shape[0] == 0) or (df_promedio_pesos.shape[0] == 0):
-                st.metric('Conv. Alimenticia - CA', 'NaN')
-                CA = None
-            else:
-                #Peso promedio de las aves
-                peso_promedio = float(df_promedio_pesos.values[0])/1000
+            st.write(f'''La camada se ingresó el **{camada_ingreso}** encuentra en la granja **{camada_granja}** el el galpón **{camada_galpon}** 
+                    que tiene una capacidad de **{camada_capacidad}** aves. Se ingresaron un total de **{camada_ingresados}** y llevan 
+                    **{camada_dias}** dias, en los cuales han muerto **{camada_muerte}** y se han descartado **{camada_descarte}** aves. 
+                    Hasta la fecha se han sacrificado **{camada_sacrificio}**''')
+        
+            
+            # Se establecen columnas para las métricas.
+            st.divider()
+            
+            st.subheader('Análisis zootécnicos')
+            metr1, metr2, metr3, metr4 = st.columns(4)
+            
+            # Mortalidad
+            with metr1:
+                mortalidad = round((df_camadas_merged['Muertes'][df_camadas_merged['id'] == camada_evualuar_id] )/ (df_camadas_merged['Ingresados'][df_camadas_merged['id'] == camada_evualuar_id]),4)*100
+                st.metric('Mortalidad', value= f'{float(mortalidad)} %')
+            
+            #Conversión Alimenticia - CA = Consumo Alimento Promedio / Peso Prom
+            with metr2: 
+                df_consumo_alimento = util.cosnultaQuery(f'''SELECT SUM(PESO) AS TOTAL_ALIMENTO
+                                                            FROM PUBLIC.ALIMENTO
+                                                            WHERE (CAMADA_ID = {camada_evualuar_id})
+                                                            ''')
+                df_promedio_pesos = util.cosnultaQuery(f'''SELECT PROMEDIO
+                                                            FROM PUBLIC.PROMEDIO_MEDICIONES_PESOS
+                                                            WHERE FECHA =
+                                                                    (SELECT MAX(FECHA)
+                                                                        FROM PUBLIC.PROMEDIO_MEDICIONES_PESOS
+                                                                        WHERE CAMADA_ID = {camada_evualuar_id})''')
                 
-                # Consumo promedio de aves ingresadas
-                consumo_promedio = float(round(df_consumo_alimento['total_alimento'].values[0]/df_camadas_merged['Ingresados'].values[0], 4))
+                #Traemos la referencia de CA de acuerdo a los días transcurridos
+                CA_referencia = df_desempeno['CA'][(df_desempeno['Edad en días'] == camada_dias) & 
+                                                    (df_desempeno['raza_id'] == camada_raza) &
+                                                    (df_desempeno['sexo'] == 'mixto')].iloc[0]
                 
-                # Calculo de la conversión alimenticia
-                CA = round(consumo_promedio / peso_promedio, 4)
-                CA_diferencia = round(CA-CA_referencia, 4)
-                st.metric('Conv. Alimenticia - CA', CA, CA_diferencia, delta_color='inverse')
+                if (df_consumo_alimento.shape[0] == 0) or (df_promedio_pesos.shape[0] == 0):
+                    st.metric('Conv. Alimenticia - CA', 'NaN')
+                    CA = None
+                else:
+                    #Peso promedio de las aves
+                    peso_promedio = float(df_promedio_pesos.values[0])/1000
+                    
+                    # Consumo promedio de aves ingresadas
+                    consumo_promedio = float(round(df_consumo_alimento['total_alimento'].values[0]/df_camadas_merged['Ingresados'].values[0], 4))
+                    
+                    # Calculo de la conversión alimenticia
+                    CA = round(consumo_promedio / peso_promedio, 4)
+                    CA_diferencia = round(CA-CA_referencia, 4)
+                    st.metric('Conv. Alimenticia - CA', CA, CA_diferencia, delta_color='inverse')
         
-        # Eficiencia Alimenticia - EA = Peso Prom / Conversión Alimenticia 
-        with metr3:
-            if (CA == None) or (df_promedio_pesos.shape[0] == 0) :
-                st.metric('Ef. Alimenticia - EA', 'NaN')
-                EA = None
-            else:
-                EA = round(peso_promedio / CA, 4)
-                st.metric('Ef. Alimenticia - EA', EA)
         
-        # Indice de Productividad - IP = Eficiencia Alimenticia / Conversión Alimenticia
-        with metr4:
-            if (CA == None) or (EA == None):
-                st.metric('Indice Productividad - IP', 'NaN')
-            else:
-                IP = round(EA / CA, 4)
-                st.metric('Indice Productividad - IP', IP)
-        st.divider()
-        
-        st.subheader('Análisis económico')
-        metr5, metr6, metr7, metr8 = st.columns(4)
-        
-        # Total costos
-        with metr5:
-            df_costo_total = util.cosnultaQuery(f'''SELECT SUM(COSTO_TOTAL)
-                                        FROM PUBLIC.COSTOS
-                                        WHERE CAMADA_ID = {camada_evualuar_id}
-                                    ''')
-            if df_costo_total.values[0] == None:
-                st.metric('Total costos', value = 0)
-                costo_total = 0
-            else:
-                costo_total = int(df_costo_total.values[0])
-                st.metric('Total costos', value = f'${format(round(costo_total/1000000, 3), ",")} M')
-        
-        # total ventas
-        with metr6:
-            #valor_venta= 7234650
-            df_valor_venta = util.cosnultaQuery(f'''
-                                            SELECT SUM(PRECIO_TOTAL) AS TOTAL
-                                            FROM PUBLIC.VENTAS
+            # Eficiencia Alimenticia - EA = Peso Prom / Conversión Alimenticia 
+            with metr3:
+                if (CA == None) or (df_promedio_pesos.shape[0] == 0) :
+                    st.metric('Ef. Alimenticia - EA', 'NaN')
+                    EA = None
+                else:
+                    EA = round(peso_promedio / CA, 4)
+                    st.metric('Ef. Alimenticia - EA', EA)
+            
+            # Indice de Productividad - IP = Eficiencia Alimenticia / Conversión Alimenticia
+            with metr4:
+                if (CA == None) or (EA == None):
+                    st.metric('Indice Productividad - IP', 'NaN')
+                else:
+                    IP = round(EA / CA, 4)
+                    st.metric('Indice Productividad - IP', IP)
+            st.divider()
+            
+            st.subheader('Análisis económico')
+            metr5, metr6, metr7, metr8 = st.columns(4)
+            
+            # Total costos
+            with metr5:
+                df_costo_total = util.cosnultaQuery(f'''SELECT SUM(COSTO_TOTAL)
+                                            FROM PUBLIC.COSTOS
                                             WHERE CAMADA_ID = {camada_evualuar_id}
-                                            ''')
+                                        ''')
+                if df_costo_total.values[0] == None:
+                    st.metric('Total costos', value = 0)
+                    costo_total = 0
+                else:
+                    costo_total = int(df_costo_total.values[0])
+                    st.metric('Total costos', value = f'${format(round(costo_total/1000000, 3), ",")} M')
             
-            if df_valor_venta.values[0] == None:
-                st.metric('Total ventas',value= 0)
-                valor_venta = 0
-            else:
-                valor_venta = int(df_valor_venta.values[0])
-                st.metric('Total ventas',value= f'${format(round(valor_venta/1000000, 3) , ",")} M')
-        
-        #Utilidades
-        with metr7:
-            st.metric('Utilidad total', value= f'${format(round((valor_venta-costo_total)/1000000, 3), ",")} M')
-        
-        #Porcentaje de utilidades
-        with metr8:
-            if valor_venta == 0:
+            # total ventas
+            with metr6:
+                #valor_venta= 7234650
+                df_valor_venta = util.cosnultaQuery(f'''
+                                                SELECT SUM(PRECIO_TOTAL) AS TOTAL
+                                                FROM PUBLIC.VENTAS
+                                                WHERE CAMADA_ID = {camada_evualuar_id}
+                                                ''')
                 
-                st.metric('Porcentaje Utilidad', value= f'{0} %')
-            else:
-                utilidad = (valor_venta-costo_total)/valor_venta
-                utilidad = round(utilidad * 100, 3)
-                st.metric('Porcentaje Utilidad', value= f'{utilidad} %')
-        
-        st.divider()
-        
-        st.subheader('Mortalidad y Descarte')
-        
-        ### Se hace grafico st.scatter_chart donde muestre las muertes en un color y los descartes en otro
-        ### donde se vea las muertes de las aves
-        
-        @st.cache_data(ttl=180)
-        def buscarMortalidad_descarte():
-            df_mortalidad = util.cosnultaQuery(f'''
+                if df_valor_venta.values[0] == None:
+                    st.metric('Total ventas',value= 0)
+                    valor_venta = 0
+                else:
+                    valor_venta = int(df_valor_venta.values[0])
+                    st.metric('Total ventas',value= f'${format(round(valor_venta/1000000, 3) , ",")} M')
+            
+            #Utilidades
+            with metr7:
+                st.metric('Utilidad total', value= f'${format(round((valor_venta-costo_total)/1000000, 3), ",")} M')
+            
+            #Porcentaje de utilidades
+            with metr8:
+                if valor_venta == 0:
+                    
+                    st.metric('Porcentaje Utilidad', value= f'{0} %')
+                else:
+                    utilidad = (valor_venta-costo_total)/valor_venta
+                    utilidad = round(utilidad * 100, 3)
+                    st.metric('Porcentaje Utilidad', value= f'{utilidad} %')
+            
+            st.divider()
+            
+            st.subheader('Mortalidad y Descarte')
+            
+            ### Se hace grafico st.scatter_chart donde muestre las muertes en un color y los descartes en otro
+            ### donde se vea las muertes de las aves
+            
+            @st.cache_data(ttl=180)
+            def buscarMortalidad_descarte():
+                df_mortalidad = util.cosnultaQuery(f'''
+                                                    SELECT CAMADA_ID,
+                                                        FECHA,
+                                                        CANTIDAD AS "Mortalidad",
+                                                        CAUSAS_MORTALIDAD.CAUSA_POSIBLE as "Causa"
+                                                    FROM PUBLIC.MORTALIDAD
+                                                    JOIN PUBLIC.CAUSAS_MORTALIDAD ON CAUSAS_MORTALIDAD.ID = MORTALIDAD.CAUSA_POSIBLE_ID
+                                                    WHERE CAMADA_ID = {camada_evualuar_id}
+                                                    ''')
+                df_descarte = util.cosnultaQuery(f'''
                                                 SELECT CAMADA_ID,
+                                                    RAZON,
                                                     FECHA,
-                                                    CANTIDAD AS "Mortalidad",
-                                                    CAUSAS_MORTALIDAD.CAUSA_POSIBLE as "Causa"
-                                                FROM PUBLIC.MORTALIDAD
-                                                JOIN PUBLIC.CAUSAS_MORTALIDAD ON CAUSAS_MORTALIDAD.ID = MORTALIDAD.CAUSA_POSIBLE_ID
+                                                    CANTIDAD AS "Descarte"
+                                                FROM PUBLIC.DESCARTE
                                                 WHERE CAMADA_ID = {camada_evualuar_id}
                                                 ''')
-            df_descarte = util.cosnultaQuery(f'''
-                                            SELECT CAMADA_ID,
-                                                RAZON,
-                                                FECHA,
-                                                CANTIDAD AS "Descarte"
-                                            FROM PUBLIC.DESCARTE
-                                            WHERE CAMADA_ID = {camada_evualuar_id}
-                                            ''')
+                
+                # Hacemos grafico de barras por las causas de muerte
+                df_descarte_ = df_descarte[['fecha', 'Descarte']]
+                df_mortalidad_ = df_mortalidad[['fecha', 'Mortalidad']]
+                df_mortalidad_descarte = pd.concat([df_mortalidad_, df_descarte_])
+                return df_mortalidad, df_descarte, df_mortalidad_descarte
             
-            # Hacemos grafico de barras por las causas de muerte
-            df_descarte_ = df_descarte[['fecha', 'Descarte']]
-            df_mortalidad_ = df_mortalidad[['fecha', 'Mortalidad']]
-            df_mortalidad_descarte = pd.concat([df_mortalidad_, df_descarte_])
-            return df_mortalidad, df_descarte, df_mortalidad_descarte
-        
-        df_mortalidad, df_descarte, df_mortalidad_descarte = buscarMortalidad_descarte()
-        
-        # Se aplica mensaje en caso de que no se haya presentado mortalidad o descarte
-        if (df_mortalidad.shape[0] == 0 ) and (df_descarte.shape[0] == 0):
-            st.info('Aún no haz registrado mortalidad o descartes en tu camada')
-        
-        else:
-            df_mortalidad_agg = df_mortalidad.groupby('Causa')['Mortalidad'].sum().reset_index().sort_values(by='Mortalidad', ascending=False)
+            df_mortalidad, df_descarte, df_mortalidad_descarte = buscarMortalidad_descarte()
             
-            fig_mortalidad_descarte = px.scatter(df_mortalidad_descarte, 
-                                                x = 'fecha', 
-                                                y=['Mortalidad', 'Descarte'],
-                                                )
+            # Se aplica mensaje en caso de que no se haya presentado mortalidad o descarte
+            if (df_mortalidad.shape[0] == 0 ) and (df_descarte.shape[0] == 0):
+                st.info('Aún no haz registrado mortalidad o descartes en tu camada')
             
-            st.plotly_chart(fig_mortalidad_descarte, use_container_width=True)
-            
-            #st.scatter_chart(df_mortalidad_descarte, x = 'fecha', y=['Mortalidad', 'Descarte'], x_label='Fecha', y_label='Cantidad', color=["#FF0000", "#0000FF"])
-            
-            #Se hace la gráfica de barras de mortalidad
-            fig_mortalidad = px.bar(df_mortalidad_agg,
-                            x='Causa',
-                            y='Mortalidad',
-                            color = 'Causa',
-                            text_auto=True, #Muestra el valor de la columna
-                            color_discrete_sequence= px.colors.qualitative.D3,
-                            title='Causas de Mortalidad'
-                        )
-            st.plotly_chart(fig_mortalidad, use_container_width=True)
+            else:
+                df_mortalidad_agg = df_mortalidad.groupby('Causa')['Mortalidad'].sum().reset_index().sort_values(by='Mortalidad', ascending=False)
+                
+                fig_mortalidad_descarte = px.scatter(df_mortalidad_descarte, 
+                                                    x = 'fecha', 
+                                                    y=['Mortalidad', 'Descarte'],
+                                                    )
+                
+                st.plotly_chart(fig_mortalidad_descarte, use_container_width=True)
+                
+                #st.scatter_chart(df_mortalidad_descarte, x = 'fecha', y=['Mortalidad', 'Descarte'], x_label='Fecha', y_label='Cantidad', color=["#FF0000", "#0000FF"])
+                
+                #Se hace la gráfica de barras de mortalidad
+                fig_mortalidad = px.bar(df_mortalidad_agg,
+                                x='Causa',
+                                y='Mortalidad',
+                                color = 'Causa',
+                                text_auto=True, #Muestra el valor de la columna
+                                color_discrete_sequence= px.colors.qualitative.D3,
+                                title='Causas de Mortalidad'
+                            )
+                st.plotly_chart(fig_mortalidad, use_container_width=True)
 
-            #Se hace grafica de pie de distribución de mortalidad
-            fig_distribucion_mortalidad = px.pie(df_mortalidad_agg,
-                            values='Mortalidad',
-                            names='Causa',
-                            color_discrete_sequence= px.colors.qualitative.D3,
-                            title='Distribución de Causas de Mortalidad'
-                        )
-            st.plotly_chart(fig_distribucion_mortalidad, use_container_width=True)
+                #Se hace grafica de pie de distribución de mortalidad
+                fig_distribucion_mortalidad = px.pie(df_mortalidad_agg,
+                                values='Mortalidad',
+                                names='Causa',
+                                color_discrete_sequence= px.colors.qualitative.D3,
+                                title='Distribución de Causas de Mortalidad'
+                            )
+                st.plotly_chart(fig_distribucion_mortalidad, use_container_width=True)
+                
+            st.divider()
             
-        st.divider()
-        
-        # Se hace Análisis de los Costos
-        st.subheader('Análisis de Costos')
-        
-        @st.cache_data(ttl=180)
-        def consultarCostosCamada():
-            df_costosCamada = util.cosnultaQuery(f'''
-                                                SELECT CAMADA_ID,
-                                                    TIPO_ID,
-                                                    TIPO as "Tipo",
-                                                    PROVEEDOR_ID,
-                                                    COSTO_UNITARIO,
-                                                    CANTIDAD,
-                                                    COSTO_TOTAL as "Costo Total",
-                                                    FECHA
-                                                FROM PUBLIC.COSTOS
-                                                JOIN PUBLIC.TIPOS_COSTOS ON TIPOS_COSTOS.ID = COSTOS.TIPO_ID
-                                                WHERE CAMADA_ID = {camada_evualuar_id}
-                                                ''')
+            # Se hace Análisis de los Costos
+            st.subheader('Análisis de Costos')
             
-            df_costoCamada_agg = df_costosCamada.groupby('Tipo')['Costo Total'].sum().reset_index().sort_values(by='Costo Total', ascending=False)
+            @st.cache_data(ttl=180)
+            def consultarCostosCamada():
+                df_costosCamada = util.cosnultaQuery(f'''
+                                                    SELECT CAMADA_ID,
+                                                        TIPO_ID,
+                                                        TIPO as "Tipo",
+                                                        PROVEEDOR_ID,
+                                                        COSTO_UNITARIO,
+                                                        CANTIDAD,
+                                                        COSTO_TOTAL as "Costo Total",
+                                                        FECHA
+                                                    FROM PUBLIC.COSTOS
+                                                    JOIN PUBLIC.TIPOS_COSTOS ON TIPOS_COSTOS.ID = COSTOS.TIPO_ID
+                                                    WHERE CAMADA_ID = {camada_evualuar_id}
+                                                    ''')
+                
+                df_costoCamada_agg = df_costosCamada.groupby('Tipo')['Costo Total'].sum().reset_index().sort_values(by='Costo Total', ascending=False)
+                
+                return df_costosCamada, df_costoCamada_agg
             
-            return df_costosCamada, df_costoCamada_agg
-        
-        df_costosCamada, df_costoCamada_agg = consultarCostosCamada()
-        
-        # Se aplica mensaje si NO hay costos registrados
-        if df_costosCamada.shape[0] == 0:
-            st.info('Aún no haz registrado costos asociados a tu camada', icon=':material/notifications:')
+            df_costosCamada, df_costoCamada_agg = consultarCostosCamada()
+            
+            # Se aplica mensaje si NO hay costos registrados
+            if df_costosCamada.shape[0] == 0:
+                st.info('Aún no haz registrado costos asociados a tu camada', icon=':material/notifications:')
+            
+            else:
+                fig_costos = px.bar(df_costoCamada_agg,
+                                    x= 'Tipo',
+                                    y= 'Costo Total',
+                                    color = 'Tipo',
+                                    color_discrete_sequence= px.colors.qualitative.D3,
+                                    text_auto=True,
+                                    title='Constos de producción de camada')
+                
+                st.plotly_chart(fig_costos, use_container_width=True)
+                
+                fig_pie_costos = px.pie(df_costoCamada_agg,
+                                    names= 'Tipo',
+                                    values= 'Costo Total',
+                                    color = 'Tipo',
+                                    color_discrete_sequence= px.colors.qualitative.D3,
+                                    title= 'Distribución de los costos de producción')
+                
+                st.plotly_chart(fig_pie_costos, use_container_width=True)
         
         else:
-            fig_costos = px.bar(df_costoCamada_agg,
-                                x= 'Tipo',
-                                y= 'Costo Total',
-                                color = 'Tipo',
-                                color_discrete_sequence= px.colors.qualitative.D3,
-                                text_auto=True,
-                                title='Constos de producción de camada')
-            
-            st.plotly_chart(fig_costos, use_container_width=True)
-            
-            fig_pie_costos = px.pie(df_costoCamada_agg,
-                                names= 'Tipo',
-                                values= 'Costo Total',
-                                color = 'Tipo',
-                                color_discrete_sequence= px.colors.qualitative.D3,
-                                title= 'Distribución de los costos de producción')
-            
-            st.plotly_chart(fig_pie_costos, use_container_width=True)
+            st.info('Aún no haz registrado mortalidad o descartes en tu camada', icon=':material/notifications:')
         
 # Histórico de las camadas
 with st.container(border=True):

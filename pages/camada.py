@@ -74,7 +74,7 @@ df_razas = util.listaRazas()
 st.subheader('Agrega o elimina camadas')
 with st.container(border=True):
     if st.toggle('**Gestionar camadas**'):
-        tab1, tab2 = st.tabs(['Agregar camada', 'Eliminar camada'])
+        tab1, tab2, tab3 = st.tabs(['Agregar camada','Finalizar camada' ,'Eliminar camada'])
         # Opción para agregar una camada
         with tab1:
             granja_camada = st.selectbox('Selecciona la granja', options=lista_granjas)
@@ -119,11 +119,27 @@ with st.container(border=True):
                         st.rerun()
         
         if df_camadas_merged.shape[0] > 0:
-            with tab2: #st.checkbox(':red[**Eliminar una camada**]', key='del_camada', value=False):
+            with tab2:
+                granja_finalizar_camada = st.selectbox('Selecciona la camada a eliminar', options=df_camadas_merged['Granja'], key='granjafinal')
+                galpon_finalizar_camada = st.selectbox('Selecciona la camada a eliminar', options=df_camadas_merged['Galpón'][df_camadas_merged['Granja'] == granja_finalizar_camada], key='galponfinal')
+                finalizar_camada_id = int(df_camadas_merged['id'][df_camadas_merged['Galpón'] == galpon_finalizar_camada].values[0])
+                st.write(f'La camada a :red[finalizar] inició con {df_camadas_merged["Ingresados"].values[0]} aves y se han sacrificado {df_camadas_merged["Sacrificados"].values[0]}')
+                aceptar_finalizar = st.checkbox('Confirmo que deseo finalizar la camada')
+                if st.button('Finalizar camada', disabled=not(aceptar_finalizar), type='primary'):
+                    resultado_finalizar_camada = util.finalizarCamada(finalizar_camada_id)
+                    resultado_finalizar_camada
+                    if resultado_finalizar_camada:
+                        st.success('Se finalizó la camada exitosamente', icon=':material/done_all:')
+                        #st.rerun()
+                    else:
+                        resultado_finalizar_camada
+            
+            
+            with tab3: #st.checkbox(':red[**Eliminar una camada**]', key='del_camada', value=False):
                 granja_eliminar_camada = st.selectbox('Selecciona la camada a eliminar', options=df_camadas_merged['Granja'])
                 galpon_eliminar_camada = st.selectbox('Selecciona la camada a eliminar', options=df_camadas_merged['Galpón'][df_camadas_merged['Granja'] == granja_eliminar_camada])
                 galpon_eliminar_camada_id = int(df_camadas_merged['id'][df_camadas_merged['Galpón'] == galpon_eliminar_camada].values[0])
-                df_camadas_merged
+                #df_camadas_merged
                 st.write(f'El galpón seleccionado tiene un total de **{df_camadas_merged["Ingresados"].values[0]}** aves')
                 aceptar_eliminar = st.checkbox('Comprendo que al **Eliminar** el proceso no se puede deshacer', key='camada_eliminar')
                 if st.button('Eliminar camada', disabled=not(aceptar_eliminar), type='primary'):
@@ -135,6 +151,8 @@ with st.container(border=True):
                         resultado_eliminar_camada
         else:
             with tab2:
+                st.info('Aún no haz registrado camadas que puedas finalizar', icon=':material/notifications:')
+            with tab3:
                 st.info('Aún no haz registrado camadas que puedas eliminar', icon=':material/notifications:')
 
 def verificarProveedor(df):

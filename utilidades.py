@@ -778,3 +778,21 @@ def registrarVenta(user_id, camada_id, faena_id, presa, cantidad, precio_unitari
             return {'success':False}
     else:
         st.write('No se pudo conectar a la base de datos')
+
+# Finaliza la camada
+def finalizarCamada(id_camada):
+    conn, c = conectarDB()
+    if conn is not None and c is not None:
+        try:
+            c.execute('''
+                    UPDATE PUBLIC.CAMADA
+                    SET CAMADA_ACTIVA = FALSE, FINALIZADA = TRUE
+                    WHERE ID = %s
+                    ''', (id_camada,))
+            conn.commit()
+            conn.close()
+            return True
+        
+        except Exception as e:
+            st.error(f"Error al eliminar la granja: {e}")
+            return {'success':False}
