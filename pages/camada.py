@@ -116,6 +116,7 @@ with st.container(border=True):
                                                         user_id)
                     if resultado_agg_camada == True:
                         st.success('Se agregó la camada exitosamente', icon=':material/done_all:')
+                        st.sle
                         st.rerun()
         
         if df_camadas_merged.shape[0] > 0:

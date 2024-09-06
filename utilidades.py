@@ -805,8 +805,9 @@ def camadasFinalizadas(user_id):
             #Consulta las camadas finalizadas e informacion relacionada
             c.execute('''
                     SELECT CAMADA.USER_ID,
-                        GRANJA.NOMBRE_GRANJA,
-                        GALPON.NOMBRE,
+                        CAMADA.ID AS "camada_id",
+                        GRANJA.NOMBRE_GRANJA AS "Granja",
+                        GALPON.NOMBRE AS "Galpón",
                         CAMADA.GALPON_ID,
                         CAMADA.CANTIDAD AS "Ingresados",
                         FECHA_INICIO,
@@ -825,31 +826,86 @@ def camadasFinalizadas(user_id):
                     WHERE USER_ID = %s AND FINALIZADA = TRUE
                     ''', (user_id,))
             camadas_finalizadas = c.fetchall()
-            columnas = [desc[0] for desc in c.description]
-            df_camadas_finalizadas = pd.DataFrame(camadas_finalizadas, columns=columnas)
-            
-            #Consulta los costos relacionadas a las camadas
-            c.execute('''
-                    SELECT COSTOS.CAMADA_ID,
-                        TIPOS_COSTOS.TIPO AS "costos",
-                        SUM(COSTO_TOTAL) AS "total"
-                    FROM PUBLIC.COSTOS
-                    JOIN PUBLIC.TIPOS_COSTOS ON TIPOS_COSTOS.ID = COSTOS.TIPO_ID
-                    WHERE CAMADA_ID =
-                            (SELECT ID
-                                FROM PUBLIC.CAMADA
-                                WHERE USER_ID = %s
-                                    AND FINALIZADA = TRUE)
-                    GROUP BY TIPOS_COSTOS.TIPO, COSTOS.CAMADA_ID
-                    ''', (user_id,))
-            costos_camadas = c.fetchall()
-            columnas = [desc[0] for desc in c.description]
-            df_costos_camadas = pd.DataFrame(costos_camadas, columns=columnas)
+            columnas_camadas = [desc[0] for desc in c.description]
+            df_camadas_finalizadas = pd.DataFrame(camadas_finalizadas, columns=columnas_camadas)
             
             conn.commit()
             conn.close()
-            return df_camadas_finalizadas, df_costos_camadas
+            return df_camadas_finalizadas
         
         except Exception as e:
             st.error(f"Error al eliminar la granja: {e}")
             return {'success':False}
+            
+
+def costos_ventas_Camadas(camada_id):
+    conn, c = conectarDB()
+    if conn is not None and c is not None:
+        try:
+            #Consulta los costos relacionadas a las camadas
+            c.execute('''
+                    SELECT COSTOS.CAMADA_ID,
+                        TIPOS_COSTOS.TIPO AS "Tipo",
+                        SUM(COSTO_TOTAL) AS "Costo Total"
+                    FROM PUBLIC.COSTOS
+                    JOIN PUBLIC.TIPOS_COSTOS ON TIPOS_COSTOS.ID = COSTOS.TIPO_ID
+                    WHERE CAMADA_ID = %s
+                    GROUP BY COSTOS.CAMADA_ID, TIPOS_COSTOS.TIPO
+                    ORDER BY SUM(COSTO_TOTAL) DESC
+                    ''', (camada_id,))
+            costos_camadas = c.fetchall()
+            columnas_costos = [desc[0] for desc in c.description]
+            df_costos_camadas = pd.DataFrame(costos_camadas, columns=columnas_costos)
+            
+            #Consulta las ventas relacionadas a las camadas
+            c.execute('''
+                    SELECT VENTAS.CAMADA_ID,
+                        TIPO_PRESAS.NOMBRE,
+                        SUM(PRECIO_TOTAL) AS "Total Ventas"
+                    FROM PUBLIC.VENTAS
+                    JOIN PUBLIC.TIPO_PRESAS ON TIPO_PRESAS.ID = VENTAS.PRESA
+                    WHERE CAMADA_ID = %s
+                    GROUP BY VENTAS.CAMADA_ID, TIPO_PRESAS.NOMBRE
+                    ''', (camada_id,))
+            ventas_camadas = c.fetchall()
+            columnas_ventas = [desc[0] for desc in c.description]
+            df_ventas_camadas = pd.DataFrame(ventas_camadas, columns=columnas_ventas)
+            
+            conn.commit()
+            conn.close()
+            return df_costos_camadas, df_ventas_camadas
+        
+        except Exception as e:
+            st.error(f"Error al eliminar la granja: {e}")
+            return {'success':False}
+
+
+def buscarMortalidad_descarte(camada_id):
+                df_mortalidad = cosnultaQuery(f'''
+                                                SELECT CAMADA_ID,
+                                                    FECHA,
+                                                    SUM(CANTIDAD) AS "Mortalidad",
+                                                    CAUSAS_MORTALIDAD.CAUSA_POSIBLE AS "Causa"
+                                                FROM PUBLIC.MORTALIDAD
+                                                JOIN PUBLIC.CAUSAS_MORTALIDAD ON CAUSAS_MORTALIDAD.ID = MORTALIDAD.CAUSA_POSIBLE_ID
+                                                WHERE CAMADA_ID = {camada_id}
+                                                GROUP BY CAMADA_ID, FECHA, CAUSAS_MORTALIDAD.CAUSA_POSIBLE
+                                                    ''')
+                df_descarte = cosnultaQuery(f'''
+                                                SELECT CAMADA_ID,
+                                                    RAZON,
+                                                    FECHA,
+                                                    SUM(CANTIDAD) AS "Descarte"
+                                                FROM PUBLIC.DESCARTE
+                                                WHERE CAMADA_ID = {camada_id}
+                                                GROUP BY CAMADA_ID,
+                                                    FECHA,
+                                                    CANTIDAD,
+                                                    RAZON
+                                                ''')
+                
+                # Hacemos grafico de barras por las causas de muerte
+                df_descarte_ = df_descarte[['fecha', 'Descarte']]
+                df_mortalidad_ = df_mortalidad[['fecha', 'Mortalidad']]
+                df_mortalidad_descarte = pd.concat([df_mortalidad_, df_descarte_])
+                return df_mortalidad, df_descarte, df_mortalidad_descarte

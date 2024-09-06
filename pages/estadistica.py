@@ -261,8 +261,6 @@ with st.container(border=True):
                                     por encima**] del peso de referencia, lo que equivale a **{round((alimento_maximo - peso_referencia)/alimento_referencia, 4) * 100}%**''')
                 #st.write()
 
-
-
 # Análisis de las camadas
 with st.container(border=True):
     if st.toggle('Análisis de tus camadas'):
@@ -374,7 +372,6 @@ with st.container(border=True):
             
             # total ventas
             with metr6:
-                #valor_venta= 7234650
                 df_valor_venta = util.cosnultaQuery(f'''
                                                 SELECT SUM(PRECIO_TOTAL) AS TOTAL
                                                 FROM PUBLIC.VENTAS
@@ -409,33 +406,7 @@ with st.container(border=True):
             ### Se hace grafico st.scatter_chart donde muestre las muertes en un color y los descartes en otro
             ### donde se vea las muertes de las aves
             
-            #@st.cache_data(ttl=180)
-            def buscarMortalidad_descarte():
-                df_mortalidad = util.cosnultaQuery(f'''
-                                                    SELECT CAMADA_ID,
-                                                        FECHA,
-                                                        CANTIDAD AS "Mortalidad",
-                                                        CAUSAS_MORTALIDAD.CAUSA_POSIBLE as "Causa"
-                                                    FROM PUBLIC.MORTALIDAD
-                                                    JOIN PUBLIC.CAUSAS_MORTALIDAD ON CAUSAS_MORTALIDAD.ID = MORTALIDAD.CAUSA_POSIBLE_ID
-                                                    WHERE CAMADA_ID = {camada_evualuar_id}
-                                                    ''')
-                df_descarte = util.cosnultaQuery(f'''
-                                                SELECT CAMADA_ID,
-                                                    RAZON,
-                                                    FECHA,
-                                                    CANTIDAD AS "Descarte"
-                                                FROM PUBLIC.DESCARTE
-                                                WHERE CAMADA_ID = {camada_evualuar_id}
-                                                ''')
-                
-                # Hacemos grafico de barras por las causas de muerte
-                df_descarte_ = df_descarte[['fecha', 'Descarte']]
-                df_mortalidad_ = df_mortalidad[['fecha', 'Mortalidad']]
-                df_mortalidad_descarte = pd.concat([df_mortalidad_, df_descarte_])
-                return df_mortalidad, df_descarte, df_mortalidad_descarte
-            
-            df_mortalidad, df_descarte, df_mortalidad_descarte = buscarMortalidad_descarte()
+            df_mortalidad, df_descarte, df_mortalidad_descarte = util.buscarMortalidad_descarte(camada_evualuar_id)
             
             # Se aplica mensaje en caso de que no se haya presentado mortalidad o descarte
             if (df_mortalidad.shape[0] == 0 ) and (df_descarte.shape[0] == 0):
@@ -551,8 +522,162 @@ with st.container(border=True):
         
         else:
             st.info('Aún no haz registrado mortalidad o descartes en tu camada', icon=':material/notifications:')
-        
+
 # Histórico de las camadas
 with st.container(border=True):
     if st.toggle('Histórico de tus camadas'):
-        st.write('test')
+        df_camadas_finalizadas = util.camadasFinalizadas(user_id)
+        df_camadas_finalizadas['galponEingreso'] = ' Ingresado el ' + df_camadas_finalizadas['fecha_inicio'].map(str) +' en la granja '+df_camadas_finalizadas['Granja'].map(str) +' en el galpón '+ df_camadas_finalizadas['Galpón'].map(str)
+        df_camadas_finalizadas
+        
+        #Manejo de errores si no se han finalizado camadas
+        if df_camadas_finalizadas.shape[0] == 0:
+            st.info('Aún no haz fianlizado camadas. Vuelve más adelante', icon=':material/notifications:')
+        
+        else:
+            camada_historial = st.selectbox('Seleccione la camada para ver su histórico', options=df_camadas_finalizadas['galponEingreso'])
+            camada_historial_id = int(df_camadas_finalizadas['camada_id'][df_camadas_finalizadas['galponEingreso'] == camada_historial])
+            camada_historial_id
+            df_mortalidad_his, df_descarte_his, df_mortalidad_descarte_his = util.buscarMortalidad_descarte(camada_historial_id)
+            df_mortalidad_his, df_descarte_his, df_mortalidad_descarte_his
+            
+            def analisisCamadas(camada_id):
+                
+                df_costos_camadas, df_ventas_camadas = util.costos_ventas_Camadas(camada_id)
+                
+                st.write(f'''Esto sería el análisis de la camada histórica
+                        ''')
+                st.divider()
+                
+                st.subheader('Análisis Zootécnicos')
+                
+                ind1, ind2, ind3, ind4 = st.columns(4)
+                
+                with ind1:
+                    st.metric('Mortalidad', 'ind 1')
+                
+                with ind2:
+                    st.metric('Conv. Alimenticia - CA', 'ind 2')
+                
+                with ind3:
+                    st.metric('Ef. Alimenticia - EA', 'ind 3')
+                
+                with ind4:
+                    st.metric('Indice Productividad - IP', 'ind 4')
+                
+                st.divider()
+                
+                st.subheader('Análisis Económico')
+                
+                ind5, ind6, ind7, ind8 = st.columns(4)
+                
+                with ind5:
+                    st.metric('Total Costos', 'ind 5')
+                
+                with ind6:
+                    st.metric('Total Ventas', 'ind 6')
+                
+                with ind7:
+                    st.metric('Utilidad Neta', 'ind 7')
+                
+                with ind8:
+                    st.metric('Porcentaje Utilidad', 'ind 8')
+                
+                st.divider()
+                
+                st.subheader('Mortalidad y Descarte')
+                
+                df_mortalidad, df_descarte, df_mortalidad_descarte = util.buscarMortalidad_descarte(camada_id)
+
+                # Se aplica mensaje en caso de que no se haya presentado mortalidad o descarte
+                if (df_mortalidad.shape[0] == 0 ) and (df_descarte.shape[0] == 0):
+                    st.info('Aún no haz registrado mortalidad o descartes en tu camada')
+
+                else:
+                    
+                    df_mortalidad_agg = df_mortalidad.groupby('Causa')['Mortalidad'].sum().reset_index().sort_values(by='Mortalidad', ascending=False)
+                    
+                    suma_mortalidad= df_mortalidad['Mortalidad'].values.sum()
+                    suma_descarte= df_descarte['Descarte'].values.sum()
+                    
+                    # Si hay eventos en mortalidad y descarte
+                    if (suma_mortalidad > 0) and (suma_descarte > 0):
+                        
+                        fig_mortalidad_descarte = px.scatter(df_mortalidad_descarte, 
+                                                            x = 'fecha', 
+                                                            y=['Mortalidad', 'Descarte'],
+                                                            title= 'Eventos de mortalidad y descarte'
+                                                            )
+                        
+                        #Se grafica scatter de mortalidad y descarte
+                        st.plotly_chart(fig_mortalidad_descarte, use_container_width=True)
+
+                    # Si solo se ha presentado mortalidad
+                    elif suma_mortalidad > 0:
+                        fig_mortalidad_descarte = px.scatter(df_mortalidad_descarte, 
+                                                            x = 'fecha', 
+                                                            y='Mortalidad',
+                                                            title= 'Eventos de mortalidad y descarte'
+                                                            )
+                        
+                        #Se grafica scatter de mortalidad y descarte
+                        st.plotly_chart(fig_mortalidad_descarte, use_container_width=True)
+                    
+                    # Si solo se ha presentado descarte
+                    elif suma_descarte > 0:
+                        fig_mortalidad_descarte = px.scatter(df_mortalidad_descarte, 
+                                                            x = 'fecha', 
+                                                            y='Descarte',
+                                                            title= 'Eventos de mortalidad y descarte'
+                                                            )
+                        
+                        #Se grafica scatter de mortalidad y descarte
+                        st.plotly_chart(fig_mortalidad_descarte, use_container_width=True)
+                    
+                    #Se hace la gráfica de barras de mortalidad
+                    fig_mortalidad = px.bar(df_mortalidad_agg,
+                                    x='Causa',
+                                    y='Mortalidad',
+                                    color = 'Causa',
+                                    text_auto=True, #Muestra el valor de la columna
+                                    color_discrete_sequence= px.colors.qualitative.D3,
+                                    title='Causas de Mortalidad'
+                                )
+                    st.plotly_chart(fig_mortalidad, use_container_width=True)
+
+                    #Se hace grafica de pie de distribución de mortalidad
+                    fig_distribucion_mortalidad = px.pie(df_mortalidad_agg,
+                                    values='Mortalidad',
+                                    names='Causa',
+                                    color_discrete_sequence= px.colors.qualitative.D3,
+                                    title='Distribución de Causas de Mortalidad'
+                                )
+                    st.plotly_chart(fig_distribucion_mortalidad, use_container_width=True)
+                
+                st.divider()
+                
+                st.subheader('Análisis de Costos')
+                
+                if df_costos_camadas.shape[0] == 0:
+                    st.info('Aún no haz registrado costos asociados a tu camada', icon=':material/notifications:')
+                
+                else:
+                    fig_costos = px.bar(df_costos_camadas,
+                                        x= 'Tipo',
+                                        y= 'Costo Total',
+                                        color = 'Tipo',
+                                        color_discrete_sequence= px.colors.qualitative.D3,
+                                        text_auto=True,
+                                        title='Constos de producción de camada')
+                    
+                    st.plotly_chart(fig_costos, use_container_width=True)
+                    
+                    fig_pie_costos = px.pie(df_costos_camadas,
+                                        names= 'Tipo',
+                                        values= 'Costo Total',
+                                        color = 'Tipo',
+                                        color_discrete_sequence= px.colors.qualitative.D3,
+                                        title= 'Distribución de los costos de producción')
+                    
+                    st.plotly_chart(fig_pie_costos, use_container_width=True)
+            analisisCamadas(camada_historial_id)
