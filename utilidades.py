@@ -804,26 +804,26 @@ def camadasFinalizadas(user_id):
         try:
             #Consulta las camadas finalizadas e informacion relacionada
             c.execute('''
-                    SELECT CAMADA.USER_ID,
-                        CAMADA.ID AS "camada_id",
-                        GRANJA.NOMBRE_GRANJA AS "Granja",
-                        GALPON.NOMBRE AS "Galpón",
-                        CAMADA.GALPON_ID,
-                        CAMADA.CANTIDAD AS "Ingresados",
-                        FECHA_INICIO,
-                        FECHA_ESTIMADA_SACRIFICIO,
-                        RAZAS.NOMBRE,
-                        PROVEEDOR,
-                        CAMADA_ACTIVA,
-                        MUERTES,
-                        DESCARTES,
-                        FAENADOS,
-                        FINALIZADA
-                    FROM PUBLIC.CAMADA
-                    JOIN PUBLIC.GRANJA ON GRANJA.ID = CAMADA.GRANJA_ID
-                    JOIN PUBLIC.GALPON ON GALPON.ID = CAMADA.GALPON_ID
-                    JOIN PUBLIC.RAZAS ON RAZAS.ID = CAMADA.RAZA
-                    WHERE USER_ID = %s AND FINALIZADA = TRUE
+                        SELECT CAMADA.USER_ID,
+                            CAMADA.ID AS "camada_id",
+                            GRANJA.NOMBRE_GRANJA AS "Granja",
+                            GALPON.NOMBRE AS "Galpón",
+                            CAMADA.GALPON_ID,
+                            CAMADA.CANTIDAD AS "Ingresados",
+                            FECHA_INICIO,
+                            FECHA_ESTIMADA_SACRIFICIO,
+                            RAZAS.NOMBRE,
+                            PROVEEDOR,
+                            CAMADA_ACTIVA,
+                            MUERTES AS "Muertes",
+                            DESCARTES,
+                            FAENADOS,
+                            FINALIZADA
+                        FROM PUBLIC.CAMADA
+                        JOIN PUBLIC.GRANJA ON GRANJA.ID = CAMADA.GRANJA_ID
+                        JOIN PUBLIC.GALPON ON GALPON.ID = CAMADA.GALPON_ID
+                        JOIN PUBLIC.RAZAS ON RAZAS.ID = CAMADA.RAZA
+                        WHERE USER_ID = %s AND FINALIZADA = TRUE
                     ''', (user_id,))
             camadas_finalizadas = c.fetchall()
             columnas_camadas = [desc[0] for desc in c.description]
@@ -871,9 +871,22 @@ def costos_ventas_Camadas(camada_id):
             columnas_ventas = [desc[0] for desc in c.description]
             df_ventas_camadas = pd.DataFrame(ventas_camadas, columns=columnas_ventas)
             
+            c.execute('''
+                    SELECT CAMADA_ID,
+                        FECHA,
+                        SUM(PRECIO_TOTAL) AS "Total"
+                    FROM PUBLIC.VENTAS
+                    WHERE CAMADA_ID = %s
+                    GROUP BY CAMADA_ID, FECHA
+                    ORDER BY FECHA ASC
+                    ''', (camada_id,))
+            ventas_dias_camadas = c.fetchall()
+            columnas_ventas = [desc[0] for desc in c.description]
+            df_ventas_dias_camadas = pd.DataFrame(ventas_dias_camadas, columns=columnas_ventas)
+            
             conn.commit()
             conn.close()
-            return df_costos_camadas, df_ventas_camadas
+            return df_costos_camadas, df_ventas_camadas, df_ventas_dias_camadas
         
         except Exception as e:
             st.error(f"Error al eliminar la granja: {e}")
@@ -909,3 +922,4 @@ def buscarMortalidad_descarte(camada_id):
                 df_mortalidad_ = df_mortalidad[['fecha', 'Mortalidad']]
                 df_mortalidad_descarte = pd.concat([df_mortalidad_, df_descarte_])
                 return df_mortalidad, df_descarte, df_mortalidad_descarte
+
