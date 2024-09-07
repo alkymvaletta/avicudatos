@@ -307,7 +307,7 @@ def quitarGalpon(id_galpon):
             return {'success':False}
 
 # Devuelve un df con las camadas activas
-def consultarCamadas(user_id):
+def consultarCamadasActiva(user_id):
     conn, c = conectarDB()
     if conn is not None and c is not None:
         try:
@@ -804,25 +804,25 @@ def camadasFinalizadas(user_id):
         try:
             #Consulta las camadas finalizadas e informacion relacionada
             c.execute('''
-                        SELECT CAMADA.USER_ID,
+                        SELECT --CAMADA.USER_ID,
                             CAMADA.ID AS "camada_id",
                             GRANJA.NOMBRE_GRANJA AS "Granja",
                             GALPON.NOMBRE AS "Galpón",
-                            CAMADA.GALPON_ID,
-                            CAMADA.CANTIDAD AS "Ingresados",
+                            --CAMADA.GALPON_ID,
+                            --CAMADA.CANTIDAD AS "Ingresados",
                             FECHA_INICIO,
-                            FECHA_ESTIMADA_SACRIFICIO,
-                            RAZAS.NOMBRE,
-                            PROVEEDOR,
-                            CAMADA_ACTIVA,
-                            MUERTES AS "Muertes",
-                            DESCARTES,
-                            FAENADOS,
+                            --FECHA_ESTIMADA_SACRIFICIO,
+                            --RAZAS.NOMBRE,
+                            --PROVEEDOR,
+                            --CAMADA_ACTIVA,
+                            --MUERTES AS "Muertes",
+                            --DESCARTES,
+                            --FAENADOS,
                             FINALIZADA
                         FROM PUBLIC.CAMADA
                         JOIN PUBLIC.GRANJA ON GRANJA.ID = CAMADA.GRANJA_ID
                         JOIN PUBLIC.GALPON ON GALPON.ID = CAMADA.GALPON_ID
-                        JOIN PUBLIC.RAZAS ON RAZAS.ID = CAMADA.RAZA
+                        --JOIN PUBLIC.RAZAS ON RAZAS.ID = CAMADA.RAZA
                         WHERE USER_ID = %s AND FINALIZADA = TRUE
                     ''', (user_id,))
             camadas_finalizadas = c.fetchall()
@@ -922,4 +922,71 @@ def buscarMortalidad_descarte(camada_id):
                 df_mortalidad_ = df_mortalidad[['fecha', 'Mortalidad']]
                 df_mortalidad_descarte = pd.concat([df_mortalidad_, df_descarte_])
                 return df_mortalidad, df_descarte, df_mortalidad_descarte
+
+def datosCamada(camada_id, finalizada):
+    df_datosCamada = cosnultaQuery(f'''
+                                SELECT CAMADA.USER_ID,
+                                    CAMADA.ID AS "camada_id",
+                                    GALPON_ID,
+                                    CANTIDAD AS "Ingresados",
+                                    FECHA_INICIO AS "Fecha ingreso",
+                                    CAPACIDAD,
+                                    RAZA AS RAZA_ID,
+                                    UPPER(RAZAS.NOMBRE) AS "Raza",
+                                    PROVEEDOR.NOMBRE AS "Proveedor",
+                                    CAMADA_ACTIVA,
+                                    GALPON.NOMBRE AS "Galpón",
+                                    GRANJA.NOMBRE_GRANJA AS "Granja",
+                                    MUERTES AS "Muertes",
+                                    DESCARTES AS "Descartes",
+                                    FAENADOS AS "Sacrificados",
+                                    MAX(FAENA.FECHA) AS "Fecha Final",
+                                    MAX(FAENA.FECHA) - FECHA_INICIO AS "Dias_Faena",
+                                    FINALIZADA,
+                                    (CURRENT_DATE - FECHA_INICIO) AS "Dias"
+                                FROM PUBLIC.CAMADA
+                                LEFT JOIN PUBLIC.FAENA ON FAENA.CAMADA_ID = CAMADA.ID
+                                LEFT JOIN PUBLIC.RAZAS ON RAZAS.ID = CAMADA.RAZA
+                                LEFT JOIN public.proveedor ON proveedor.id = CAMADA.proveedor
+                                LEFT JOIN PUBLIC.GALPON ON GALPON.ID = CAMADA.GALPON_ID
+                                LEFT JOIN PUBLIC.GRANJA ON GRANJA.ID = GALPON.GRANJA_ID
+                                WHERE (CAMADA.ID = {camada_id})	AND (FINALIZADA = {finalizada})
+                                GROUP BY CAMADA.USER_ID,
+                                    PROVEEDOR.NOMBRE,
+                                    CAMADA.ID,
+                                    GALPON_ID,
+                                    CANTIDAD,
+                                    FECHA_INICIO,
+                                    CAPACIDAD,
+                                    RAZAS.NOMBRE,
+                                    PROVEEDOR,
+                                    CAMADA_ACTIVA,
+                                    GALPON.NOMBRE,
+                                    GRANJA.NOMBRE_GRANJA,
+                                    MUERTES,
+                                    DESCARTES,
+                                    FAENADOS,
+                                    FINALIZADA
+                ''')
+    return df_datosCamada
+
+@st.cache_data(ttl='1d')
+def datos_desempeno():
+    # Conectamos con la database
+    
+    df_desempeno= cosnultaQuery('''
+                            SELECT EDAD_EN_DIAS,
+                                PESO,
+                                CONSUMO_ALIMENTOS_ACUMULADO,
+                                GANANCIA,
+                                CONVERSION_ALIMENTICIA_ACUMULADA AS "CA",
+                                raza_id,
+                                RAZAS.NOMBRE AS "Raza",
+                                SEXOS_AVES.SEXO
+                            FROM PUBLIC.OBJETIVOS_DESEMPENO
+                            LEFT JOIN PUBLIC.RAZAS ON RAZAS.ID = OBJETIVOS_DESEMPENO.RAZA_ID
+                            LEFT JOIN PUBLIC.SEXOS_AVES ON SEXOS_AVES.ID = OBJETIVOS_DESEMPENO.ID_SEXO
+                            ''')
+    df_desempeno.rename(columns={'edad_en_dias':'Edad en días', 'peso':'Peso', 'consumo_alimentos_acumulado':'Consumo alimento acumulado'}, inplace=True)
+    return df_desempeno
 
