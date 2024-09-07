@@ -36,7 +36,7 @@ st.write(
 
 df_granjas, df_galpones = util.listaGranjaGalpones(user_id)
 
-df_camadas = util.consultarCamadas(user_id)
+df_camadas = util.consultarCamadasActiva(user_id)
 df_camadas_merged = pd.merge(df_camadas, df_galpones, how='left', left_on='galpon_id', right_on='galpon_id')
 df_camadas_merged = df_camadas_merged.rename(columns={'cantidad':'Ingresados', 'fecha_inicio':'Fecha ingreso', 'fecha_estimada_sacrificio':'Sacrificio estimado', 'muertes':'Muertes', 'descartes':'Descartes', 'faenados':'Sacrificados'})
 df_camadas_merged['todo'] = df_camadas_merged['Granja'].map(str) + ', '+ df_camadas_merged['Galpón']
