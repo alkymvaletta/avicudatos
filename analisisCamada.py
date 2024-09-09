@@ -224,7 +224,7 @@ def analisisCamadas(camada_id, finalizada):
 
     st.subheader('Análisis de Costos')
     
-    df_costos_camadas, df_ventas_camadas, df_ventas_dias_camadas = util.costos_ventas_Camadas(camada_id)
+    df_costos_camadas, df_ventas_camadas, df_ventas_dias_camadas, df_ventas_diasWeek_camadas = util.costos_ventas_Camadas(camada_id)
     
     if df_costos_camadas.shape[0] == 0:
         st.info('Aún no haz registrado costos asociados a tu camada', icon=':material/notifications:')
@@ -267,6 +267,7 @@ def analisisCamadas(camada_id, finalizada):
         
         st.plotly_chart(fig_ventas, use_container_width=True)
         
+        # Grafico Pie de distribución de gráfico por presas
         fig_pie_ventas = px.pie(df_ventas_camadas,
                             names = 'nombre',
                             values= 'Total Ventas',
@@ -276,6 +277,7 @@ def analisisCamadas(camada_id, finalizada):
         
         st.plotly_chart(fig_pie_ventas, use_container_width=True)
         
+        #Grafico de barra de venta por días
         fig_ventas_dias = px.bar(df_ventas_dias_camadas,
                                 x = 'fecha',
                                 y= 'Total',
@@ -284,3 +286,15 @@ def analisisCamadas(camada_id, finalizada):
                                 title= 'Ventas por dias')
         
         st.plotly_chart(fig_ventas_dias, use_container_width=True)
+        
+        
+        #Gráfico de barras de ventas por día de la semana.
+        fig_ventas_diasWeek = px.bar(df_ventas_diasWeek_camadas,
+                                x = 'Día',
+                                y= 'Venta',
+                                color = 'Día',
+                                color_discrete_sequence= px.colors.qualitative.D3,
+                                title= 'Ventas por dia de la semana')
+        
+        st.plotly_chart(fig_ventas_diasWeek, use_container_width=True)
+    

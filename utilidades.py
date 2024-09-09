@@ -884,9 +884,22 @@ def costos_ventas_Camadas(camada_id):
             columnas_ventas = [desc[0] for desc in c.description]
             df_ventas_dias_camadas = pd.DataFrame(ventas_dias_camadas, columns=columnas_ventas)
             
+            c.execute('''
+                    SELECT TO_CHAR(FECHA,'Day') AS "Día",
+                        SUM(PRECIO_TOTAL) AS "Venta",
+                        EXTRACT(DOW FROM FECHA) AS "Numero_Dia"
+                    FROM PUBLIC.VENTAS
+                    WHERE CAMADA_ID = %s
+                    GROUP BY TO_CHAR(FECHA,'Day'), EXTRACT(DOW FROM FECHA)
+                    ORDER BY "Numero_Dia"
+                    ''', (camada_id,))
+            ventas_diasWeek_camadas = c.fetchall()
+            columnas_ventas = [desc[0] for desc in c.description]
+            df_ventas_diasWeek_camadas = pd.DataFrame(ventas_diasWeek_camadas, columns=columnas_ventas)
+            
             conn.commit()
             conn.close()
-            return df_costos_camadas, df_ventas_camadas, df_ventas_dias_camadas
+            return df_costos_camadas, df_ventas_camadas, df_ventas_dias_camadas, df_ventas_diasWeek_camadas
         
         except Exception as e:
             st.error(f"Error al eliminar la granja: {e}")
