@@ -171,9 +171,14 @@ def analisisCamadas(camada_id, finalizada):
             
             fig_mortalidad_descarte = px.scatter(df_mortalidad_descarte, 
                                                 x = 'fecha', 
-                                                y=['Mortalidad', 'Descarte'],
-                                                title= 'Eventos de mortalidad y descarte'
+                                                y=['Mortalidad', 'Descarte']
                                                 )
+            
+            fig_mortalidad_descarte.update_traces(marker_size=10)
+            
+            fig_mortalidad_descarte.update_layout(title= 'Eventos de mortalidad y descarte',
+                                                    xaxis_title = None,
+                                                    yaxis_title = None)
             
             #Se grafica scatter de mortalidad y descarte
             st.plotly_chart(fig_mortalidad_descarte, use_container_width=True)
@@ -186,6 +191,13 @@ def analisisCamadas(camada_id, finalizada):
                                                 title= 'Eventos de mortalidad y descarte'
                                                 )
             
+            # Se ajusta tamaño del trazo
+            fig_mortalidad_descarte.update_traces(marker_size=10)
+            
+            fig_mortalidad_descarte.update_layout(title= 'Eventos de mortalidad y descarte',
+                                                    xaxis_title = None,
+                                                    yaxis_title = None)
+            
             #Se grafica scatter de mortalidad y descarte
             st.plotly_chart(fig_mortalidad_descarte, use_container_width=True)
         
@@ -194,8 +206,14 @@ def analisisCamadas(camada_id, finalizada):
             fig_mortalidad_descarte = px.scatter(df_mortalidad_descarte, 
                                                 x = 'fecha', 
                                                 y='Descarte',
-                                                title= 'Eventos de mortalidad y descarte'
+                                                #title= 'Eventos de mortalidad y descarte'
                                                 )
+            
+            fig_mortalidad_descarte.update_traces(marker_size=10)
+            
+            fig_mortalidad_descarte.update_layout(title= 'Eventos de mortalidad y descarte',
+                                                    xaxis_title = None,
+                                                    yaxis_title = None)
             
             #Se grafica scatter de mortalidad y descarte
             st.plotly_chart(fig_mortalidad_descarte, use_container_width=True)
@@ -209,6 +227,11 @@ def analisisCamadas(camada_id, finalizada):
                         color_discrete_sequence= px.colors.qualitative.D3,
                         title='Causas de Mortalidad'
                     )
+        
+        fig_mortalidad.update_layout(yaxis=dict(showgrid=False),
+                                xaxis_title = None,
+                                yaxis_title = None)
+        
         st.plotly_chart(fig_mortalidad, use_container_width=True)
 
         #Se hace grafica de pie de distribución de mortalidad
@@ -218,6 +241,10 @@ def analisisCamadas(camada_id, finalizada):
                         color_discrete_sequence= px.colors.qualitative.D3,
                         title='Distribución de Causas de Mortalidad'
                     )
+        
+        fig_distribucion_mortalidad.update_traces(textposition = 'inside')
+        fig_distribucion_mortalidad.update_layout(uniformtext_minsize=20, uniformtext_mode='hide')
+        
         st.plotly_chart(fig_distribucion_mortalidad, use_container_width=True)
 
     st.divider()
@@ -238,14 +265,27 @@ def analisisCamadas(camada_id, finalizada):
                             text_auto=True,
                             title='Costos de producción de camada')
         
-        st.plotly_chart(fig_costos, use_container_width=True)
+        # fig_costos.update_traces(
+        #                         texttemplate='%{y:.2f}M',  
+        #                         textposition='outside')
         
+        fig_costos.update_layout(yaxis=dict(showgrid=False),
+                                yaxis_tickformat=".3s",
+                                xaxis_title = None,
+                                yaxis_title = None)
+        
+        st.plotly_chart(fig_costos, use_container_width=True)
+
+        #Gráfico de pie de distribución de costos de producción
         fig_pie_costos = px.pie(df_costos_camadas,
                             names= 'Tipo',
                             values= 'Costo Total',
                             color = 'Tipo',
                             color_discrete_sequence= px.colors.qualitative.D3,
                             title= 'Distribución de los costos de producción')
+        
+        fig_pie_costos.update_traces(textposition = 'inside')
+        fig_pie_costos.update_layout(uniformtext_minsize=20, uniformtext_mode='hide')
         
         st.plotly_chart(fig_pie_costos, use_container_width=True)
     
@@ -262,8 +302,14 @@ def analisisCamadas(camada_id, finalizada):
                             x = 'nombre',
                             y= 'Total Ventas',
                             color = 'nombre',
+                            text_auto=True,
                             color_discrete_sequence= px.colors.qualitative.D3,
                             title= 'Ventas por presas')
+        
+        fig_ventas.update_layout(yaxis=dict(showgrid=False),
+                                yaxis_tickformat=".3s",
+                                xaxis_title = None,
+                                yaxis_title = None)
         
         st.plotly_chart(fig_ventas, use_container_width=True)
         
@@ -275,15 +321,26 @@ def analisisCamadas(camada_id, finalizada):
                             color_discrete_sequence= px.colors.qualitative.D3,
                             title= 'Distribución de ventas por presas')
         
+        fig_pie_ventas.update_traces(textposition = 'inside')
+        fig_pie_ventas.update_layout(uniformtext_minsize=20, uniformtext_mode='hide')
+        
+        #fig_pie_ventas.update_traces(textposition='inside')
+        #fig_pie_ventas.update_layout(uniformtext_minsize=40)
+        
         st.plotly_chart(fig_pie_ventas, use_container_width=True)
         
         #Grafico de barra de venta por días
         fig_ventas_dias = px.bar(df_ventas_dias_camadas,
-                                x = 'fecha',
-                                y= 'Total',
+                                y = 'fecha',
+                                x= 'Total',
                                 color = 'fecha',
+                                orientation='h',
                                 color_discrete_sequence= px.colors.qualitative.D3,
-                                title= 'Ventas por dias')
+                                labels={'fecha':'Fecha', 'Total':'Venta Total'})
+        
+        fig_ventas_dias.update_layout(title= 'Ventas total por dias',
+                                                    xaxis_title = None,
+                                                    yaxis_title = None)
         
         st.plotly_chart(fig_ventas_dias, use_container_width=True)
         
@@ -294,7 +351,13 @@ def analisisCamadas(camada_id, finalizada):
                                 y= 'Venta',
                                 color = 'Día',
                                 color_discrete_sequence= px.colors.qualitative.D3,
-                                title= 'Ventas por dia de la semana')
+                                text_auto=True)
+        
+        fig_ventas_diasWeek.update_layout(title= 'Ventas por dia de la semana',
+                                            yaxis=dict(showgrid=False),
+                                            yaxis_tickformat=".3s",
+                                            xaxis_title = None,
+                                            yaxis_title = None)
         
         st.plotly_chart(fig_ventas_diasWeek, use_container_width=True)
     
