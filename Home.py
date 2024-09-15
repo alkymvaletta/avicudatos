@@ -7,7 +7,7 @@ import utilidades as util
 st.set_page_config(page_title='Avicudatos - Inicio', page_icon='🐔')   
 
 # Se agrega logo
-HORIZONTAL = 'src\images\horizontal_logo.png'
+HORIZONTAL = 'src\images\\avicudatos_sin_fondo.png'
 
 st.logo(HORIZONTAL)
 

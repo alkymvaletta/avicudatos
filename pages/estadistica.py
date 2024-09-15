@@ -7,7 +7,7 @@ import analisisCamada as anaca
 from datetime import datetime
 
 # Se agrega logo
-HORIZONTAL = 'src\images\horizontal_logo.png'
+HORIZONTAL = 'src\images\\avicudatos_sin_fondo.png'
 
 st.set_page_config(page_title='Avicudatos - Estadisticas de desempeño',page_icon='🐔')
 

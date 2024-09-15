@@ -1,7 +1,7 @@
 import streamlit as st
 import utilidades as util
 
-HORIZONTAL = 'src\images\horizontal_logo.png'
+HORIZONTAL = 'src\images\\avicudatos_sin_fondo.png'
 
 st.logo(HORIZONTAL)
 

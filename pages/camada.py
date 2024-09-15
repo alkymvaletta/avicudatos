@@ -5,7 +5,7 @@ from psycopg2 import sql
 from datetime import datetime
 
 # Se agrega logo
-HORIZONTAL = 'src\images\horizontal_logo.png'
+HORIZONTAL = 'src\images\\avicudatos_sin_fondo.png'
 
 st.set_page_config(page_title="Avicudatos - Camadas", page_icon='🐔')
 

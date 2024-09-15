@@ -7,7 +7,7 @@ from psycopg2 import sql
 from PIL import Image
 
 # Se agrega logo
-HORIZONTAL = 'src\images\horizontal_logo.png'
+HORIZONTAL = 'src\images\\avicudatos_sin_fondo.png'
 
 #Configuración de la página
 st.set_page_config(page_title="Avicudatos - Ventas", page_icon='🐔')
