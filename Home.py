@@ -1,10 +1,6 @@
 import streamlit as st
-#import streamlit_authenticator as stauth
 import utilidades as util
-#from streamlit_cookies_controller import CookieController
-import os
-import subprocess
-import sys
+
 
 st.set_page_config(page_title='Avicudatos - Inicio', page_icon='🐔')   
 
@@ -15,15 +11,6 @@ st.logo(HORIZONTAL)
 
 st.header('Avicudatos 🐔', divider='rainbow')
 
-
-def install_requirements():
-    # Verifica si el archivo requirements.txt existe
-    if os.path.exists('requirements.txt'):
-        # Ejecuta el comando pip para instalar los requisitos
-        subprocess.check_call([sys.executable, '-m', 'pip', 'install', '-r', 'requirements.txt'])
-
-# Llamar a la función para instalar dependencias
-install_requirements()
 
 if 'usuario' in st.session_state:
     

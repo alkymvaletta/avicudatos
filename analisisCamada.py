@@ -324,8 +324,6 @@ def analisisCamadas(camada_id, finalizada):
         fig_pie_ventas.update_traces(textposition = 'inside')
         fig_pie_ventas.update_layout(uniformtext_minsize=20, uniformtext_mode='hide')
         
-        #fig_pie_ventas.update_traces(textposition='inside')
-        #fig_pie_ventas.update_layout(uniformtext_minsize=40)
         
         st.plotly_chart(fig_pie_ventas, use_container_width=True)
         
