@@ -1,6 +1,5 @@
 import streamlit as st
 import utilidades as util
-#from streamlit_cookies_controller import CookieController
 
 
 st.set_page_config(page_title='Avicudatos - Inicio', page_icon='🐔')   
@@ -8,7 +7,7 @@ st.set_page_config(page_title='Avicudatos - Inicio', page_icon='🐔')
 # Se agrega logo
 HORIZONTAL = 'src\images\\avicudatos_sin_fondo.png'
 
-st.logo(HORIZONTAL)
+#st.logo(icon_image=HORIZONTAL)
 
 st.header('Avicudatos 🐔', divider='rainbow')
 

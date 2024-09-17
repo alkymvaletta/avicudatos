@@ -9,7 +9,7 @@ HORIZONTAL = 'src\images\\avicudatos_sin_fondo.png'
 
 st.set_page_config(page_title="Avicudatos - Camadas", page_icon='🐔')
 
-st.logo(HORIZONTAL)
+#st.logo(HORIZONTAL)
 
 st.header('Avicudatos 🐔', divider='rainbow')
 

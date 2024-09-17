@@ -3,7 +3,7 @@ import utilidades as util
 
 HORIZONTAL = 'src\images\\avicudatos_sin_fondo.png'
 
-st.logo(HORIZONTAL)
+#st.logo(HORIZONTAL)
 
 st.set_page_config(page_title= 'Avicudatos -Crear cuenta', page_icon='🐔')
 

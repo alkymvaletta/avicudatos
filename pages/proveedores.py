@@ -14,7 +14,7 @@ st.set_page_config(
 
 st.header('Avicudatos 🐔', divider='rainbow')
 
-st.logo(HORIZONTAL)
+#st.logo(HORIZONTAL)
 
 #Si no hay usuario registrado se va a Home
 if 'usuario' not in st.session_state:

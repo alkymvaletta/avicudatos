@@ -9,7 +9,7 @@ st.set_page_config(page_title="Avicudatos - Faena", page_icon='🐔')
 # Se agrega logo
 HORIZONTAL = 'src\images\\avicudatos_sin_fondo.png'
 
-st.logo(HORIZONTAL)
+#st.logo(HORIZONTAL)
 
 st.header('Avicudatos 🐔', divider='rainbow')
 
